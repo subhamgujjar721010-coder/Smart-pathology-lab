@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostic Lab Report - Patient Portal</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+  body{background:#eef2f7;color:#0f172a;padding:14px}
+  .topbar{max-width:820px;margin:0 auto 12px;background:#0f172a;color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .topbar h2{font-size:15px;font-weight:700;letter-spacing:.3px}
+  .topbar small{font-size:11px;color:#93c5fd;display:block}
+  .btn{border:none;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;background:#2563eb;color:#fff}
+  .btn:hover{background:#1d4ed8}
+  .sheet{max-width:820px;margin:0 auto;background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(15,23,42,.08);overflow:hidden;border:1px solid #cbd5e1}
+  .banner{background:linear-gradient(135deg,#0f4c81,#1e3a8a);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .banner h1{font-size:22px;font-weight:800;letter-spacing:.5px}
+  .banner p{font-size:12px;opacity:.92;margin-top:3px}
+  .nabl{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;text-align:right}
+  .pbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 18px;background:#f8fafc;padding:14px 24px;border-bottom:2px solid #e2e8f0;font-size:13px}
+  .pbox div span{color:#64748b;font-weight:600;display:inline-block;min-width:92px}
+  .content{padding:18px 24px 24px}
+  .dept{background:#eff6ff;color:#1e40af;font-weight:800;font-size:12px;letter-spacing:.6px;padding:6px 10px;border-left:4px solid #2563eb;margin:14px 0 8px;text-transform:uppercase}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px}
+  th{background:#f1f5f9;color:#334155;text-align:left;padding:8px 10px;border-bottom:2px solid #cbd5e1;font-size:12px}
+  td{padding:8px 10px;border-bottom:1px solid #e2e8f0}
+  .flag-H{color:#dc2626;font-weight:800}
+  .flag-L{color:#d97706;font-weight:800}
+  .flag-N{color:#0f172a;font-weight:600}
+  .badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:800;margin-left:5px}
+  .b-H{background:#fee2e2;color:#b91c1c}
+  .b-L{background:#fef3c7;color:#b45309}
+  .remarks{margin-top:14px;padding:10px 14px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;font-size:12.5px;color:#334155}
+  .footer{margin-top:26px;padding-top:14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;font-size:12px;color:#475569}
+  .sign{text-align:right;font-weight:700;color:#0f172a}
+  .err{max-width:520px;margin:60px auto;background:#fff;padding:28px;border-radius:12px;text-align:center;border:1px solid #fecaca}
+  @media print{
+    body{background:#fff;padding:0}
+    .topbar{display:none!important}
+    .sheet{box-shadow:none;border:none;max-width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <h2>VERIFIED ONLINE DIAGNOSTIC REPORT</h2>
+    <small>Patient Portal • Scan Verified</small>
+  </div>
+  <button class="btn" onclick="window.print()">Print / Save PDF</button>
+</div>
+<div id="root"></div>
+
+<script>
+(function(){
+  const root = document.getElementById('root');
+  function decodePayload(str){
+    if(!str) return null;
+    try{
+      let b64 = decodeURIComponent(str).replace(/-/g,'+').replace(/_/g,'/');
+      while(b64.length % 4) b64 += '=';
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+      const jsonStr = new TextDecoder().decode(bytes);
+      return JSON.parse(jsonStr);
+    }catch(e){
+      try{ return JSON.parse(decodeURIComponent(escape(atob(str)))); }catch(e2){ return null; }
+    }
+  }
+
+  const sp = new URLSearchParams(window.location.search);
+  let raw = sp.get('d') || sp.get('report') || '';
+  if(!raw && window.location.hash){
+    raw = window.location.hash.replace(/^#(d=|report=)?/,'');
+  }
+  const data = decodePayload(raw);
+
+  if(!data || (!data.p && !data.patientName && !data.tests)){
+    root.innerHTML = '<div class="err"><h3 style="color:#dc2626;margin-bottom:8px;">Report Data Not Found</h3><p style="font-size:13px;color:#475569;">Please scan a valid QR code printed on the laboratory diagnostic report.</p></div>';
+    return;
+  }
+
+  const labName = data.ln || data.labName || 'SMART PATHOLOGY LAB';
+  const labSub = data.ls || data.labTagline || 'Accurate • Caring • Instant Diagnostic Services';
+  const labAddr = data.la || data.labAddress || '391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.)';
+  const labPhone = data.lp || data.labPhone || '9548593164';
+  const nablNo = data.nb || data.nablNo || '';
+  const pName = data.p || data.patientName || '-';
+  const ageSex = data.as || ((data.age||'') + (data.gender ? ' / ' + data.gender : '')) || '-';
+  const labId = data.id || data.labId || '-';
+  const dt = data.dt || data.date || '-';
+  const refBy = data.rf || data.referredBy || 'Self';
+  const remarks = data.rm || data.remarks || '';
+  const docName = data.dr || data.doctorName || 'Consultant Pathologist';
+  const tests = data.t || data.tests || [];
+
+  const groups = {};
+  tests.forEach(item => {
+    const dept = item.d || item.dept || 'DIAGNOSTIC INVESTIGATIONS';
+    if(!groups[dept]) groups[dept] = [];
+    groups[dept].push(item);
+  });
+
+  let tablesHtml = '';
+  Object.keys(groups).forEach(dept => {
+    tablesHtml += `<div class="dept">${dept}</div>
+      <table>
+        <thead><tr><th style="width:42%">Investigation</th><th style="width:22%">Result</th><th style="width:14%">Unit</th><th style="width:22%">Reference Range</th></tr></thead>
+        <tbody>`;
+    groups[dept].forEach(t => {
+      const name = t.n || t.name || '-';
+      const val = (t.v !== undefined ? t.v : (t.value !== undefined ? t.value : '-'));
+      const unit = t.u || t.unit || '';
+      const ref = t.r || t.ref || '-';
+      const fl = (t.f || t.flag || '').toUpperCase();
+      const cls = fl === 'H' ? 'flag-H' : (fl === 'L' ? 'flag-L' : 'flag-N');
+      const badge = fl === 'H' ? '<span class="badge b-H">HIGH</span>' : (fl === 'L' ? '<span class="badge b-L">LOW</span>' : '');
+      tablesHtml += `<tr>
+        <td><strong>${name}</strong></td>
+        <td class="${cls}">${val}${badge}</td>
+        <td>${unit}</td>
+        <td>${ref}</td>
+      </tr>`;
+    });
+    tablesHtml += `</tbody></table>`;
+  });
+
+  root.innerHTML = `
+    <div class="sheet">
+      <div class="banner">
+        <div>
+          <h1>${labName}</h1>
+          <p>${labSub}</p>
+          <p>${labAddr}${labPhone ? ' • Mob.: ' + labPhone : ''}</p>
+        </div>
+        ${nablNo ? `<div class="nabl">NABL ACCREDITED<br>${nablNo}</div>` : '<div class="nabl">ONLINE VERIFIED<br>E-REPORT</div>'}
+      </div>
+      <div class="pbox">
+        <div><span>Patient Name:</span> <strong>${pName}</strong></div>
+        <div><span>Lab ID:</span> <strong>${labId}</strong></div>
+        <div><span>Age / Gender:</span> <strong>${ageSex}</strong></div>
+        <div><span>Report Date:</span> <strong>${dt}</strong></div>
+        <div><span>Referred By:</span> <strong>${refBy}</strong></div>
+        <div><span>Status:</span> <strong style="color:#15803d;">Verified</strong></div>
+      </div>
+      <div class="content">
+        ${tablesHtml}
+        ${remarks ? `<div class="remarks"><strong>Clinical Remarks:</strong> ${remarks}</div>` : ''}
+        <div class="footer">
+          <div>*** End of Report ***<br><small>Electronically verified report via ${labName} Online Portal</small></div>
+          <div class="sign">Authorized Signatory<br>${docName}</div>
+        </div>
+      </div>
+    </div>`;
+})();
+</script>
+</body>
+</html>
