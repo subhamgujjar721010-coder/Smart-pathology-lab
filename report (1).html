@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMART PATHOLOGY LAB - Patient Diagnostic Report</title>
+<style>
+  :root {
+    --c1: #161d6f;
+    --c2: #007a3d;
+    --grad: linear-gradient(135deg, var(--c1), var(--c2));
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  body { background: #e2e8f0; color: #0f172a; padding: 12px; }
+  .toolbar {
+    max-width: 820px; margin: 0 auto 10px; display: flex; justify-content: space-between;
+    align-items: center; gap: 8px; flex-wrap: wrap; background: #fff; padding: 10px 14px;
+    border-radius: 8px; box-shadow: 0 2px 8px rgba(15,23,42,.08);
+  }
+  .btn {
+    border: none; border-radius: 7px; padding: 8px 14px; font-size: 13px; font-weight: 700;
+    cursor: pointer; background: var(--grad); color: #fff;
+  }
+  .a4-sheet {
+    width: 100%; max-width: 820px; margin: 0 auto; background: #ffffff;
+    border: 1px solid #cbd5e1; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.12);
+    padding: 20px 24px; position: relative; overflow: hidden; color: #0f172a;
+  }
+  .watermark-layer {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-32deg);
+    font-size: 2.8rem; font-weight: 900; letter-spacing: 6px; color: rgba(15, 23, 42, 0.05);
+    pointer-events: none; user-select: none; white-space: nowrap; z-index: 1;
+  }
+
+  /* Exact Photo-Style Banner Letterhead */
+  .lh-banner-wrap {
+    position: relative; z-index: 2; margin-bottom: 12px;
+    border-bottom: 2px solid #0f172a; padding-bottom: 6px; background: #ffffff;
+  }
+  .lh-banner-top {
+    display: flex; align-items: stretch; min-height: 106px; position: relative;
+    background-color: #f8fafc;
+    background-image:
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .lh-banner-left-panel {
+    width: 165px; flex-shrink: 0;
+    background: linear-gradient(180deg, var(--c1) 0%, var(--c1) 70%, var(--c2) 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 6px 10px 6px 22px; overflow: hidden;
+  }
+  .lh-banner-curve-disk {
+    width: 136px; height: 112px; background: #ffffff;
+    border-radius: 50% 0 0 50% / 50% 0 0 50%; margin-right: -12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 6px 10px 6px 14px; box-shadow: -3px 0 8px rgba(0, 0, 0, 0.14);
+  }
+  .lh-banner-monogram {
+    font-size: 2.2rem; font-weight: 900; line-height: 0.95;
+    background: linear-gradient(135deg, #0284c7 45%, #334155 55%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: Georgia, serif; letter-spacing: -1px;
+  }
+  .lh-banner-sub-badge {
+    font-size: 0.6rem; font-weight: 800; color: var(--c1);
+    text-align: center; line-height: 1.05; margin-top: 2px; text-transform: uppercase;
+  }
+  .lh-banner-right-col { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+  .lh-banner-nabl-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 10px 4px 12px; min-height: 54px; }
+  .lh-banner-tagline-note { font-size: 0.72rem; font-weight: 700; color: #475569; padding-top: 4px; }
+  .lh-banner-ribbon {
+    background: linear-gradient(90deg, var(--c1) 0%, var(--c1) 48%, #0284c7 72%, var(--c2) 100%);
+    color: #ffffff; padding: 7px 12px; display: flex; align-items: center; justify-content: center; text-align: center;
+  }
+  .lh-banner-ribbon-title {
+    font-size: 1.38rem; font-weight: 900; letter-spacing: 1px;
+    text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.35); line-height: 1.1;
+  }
+  .lh-banner-address-bar {
+    text-align: center; font-size: 0.82rem; font-weight: 900; color: #0f172a; padding: 6px 8px 2px;
+  }
+
+  /* Classic & Compact Variants */
+  .report-header-digital {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding-bottom: 10px; margin-bottom: 12px; border-bottom: 3px solid var(--c1); position: relative; z-index: 2;
+  }
+  .rep-lab-name { font-size: 1.35rem; font-weight: 900; color: var(--c1); }
+
+  .patient-meta-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px 16px;
+    background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px;
+    padding: 9px 12px; font-size: 0.82rem; margin-bottom: 14px; position: relative; z-index: 2;
+  }
+  table.report-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; position: relative; z-index: 2; }
+  table.report-table th {
+    background: var(--grad); color: #ffffff; text-align: left; padding: 8px 9px; font-size: 0.78rem; text-transform: uppercase;
+  }
+  table.report-table td { padding: 7px 9px; border-bottom: 1px solid #e2e8f0; }
+  .dept-banner-row td {
+    background: #f1f5f9; font-weight: 800; color: var(--c1); font-size: 0.8rem;
+    text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid var(--c2);
+  }
+  .flag-high { color: #dc2626; font-weight: 900; background: #fef2f2; padding: 2px 6px; border-radius: 4px; }
+  .flag-low { color: #2563eb; font-weight: 900; background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+
+  .footer-sign {
+    margin-top: 26px; padding-top: 10px; border-top: 1px dashed #cbd5e1;
+    display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.78rem; position: relative; z-index: 2;
+  }
+  @media (max-width: 640px) {
+    .lh-banner-left-panel { width: 112px; padding-left: 10px; }
+    .lh-banner-curve-disk { width: 96px; height: 92px; }
+    .lh-banner-monogram { font-size: 1.65rem; }
+    .lh-banner-ribbon-title { font-size: 1.05rem; }
+    .patient-meta-grid { grid-template-columns: 1fr; }
+  }
+  @media print {
+    body { background: #fff; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .toolbar { display: none !important; }
+    .a4-sheet { box-shadow: none; border: none; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <strong style="color:#161d6f;font-size:14px;">Verified Patient Diagnostic Report</strong>
+  <button class="btn" onclick="window.print()">Download / Print PDF</button>
+</div>
+
+<div class="a4-sheet" id="reportContainer">
+  <div style="text-align:center;padding:30px;color:#475569;">Loading report...</div>
+</div>
+
+<script>
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function decodeBase64Url(str) {
+  let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4) b64 += '=';
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function buildNablSvg() {
+  return `<svg width="52" height="52" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="46" r="40" fill="#ffffff" stroke="#1e293b" stroke-width="2.5"/>
+    <circle cx="50" cy="46" r="35" fill="none" stroke="#1e293b" stroke-width="1" stroke-dasharray="2.5,1.8"/>
+    <circle cx="50" cy="46" r="26" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+    <path d="M35 81 L26 95 L38 91 L44 97 L47 84" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5"/>
+    <path d="M65 81 L74 95 L62 91 L56 97 L53 84" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="50" y="18" text-anchor="middle" font-size="6.2" font-weight="900" fill="#0f172a">NABL ACCREDITED</text>
+    <text x="50" y="38" text-anchor="middle" font-size="11.5" font-weight="900" fill="#0f172a">NABL</text>
+    <text x="50" y="50" text-anchor="middle" font-size="10.2" font-weight="900" fill="#0f172a">M(EL)T</text>
+    <text x="50" y="62" text-anchor="middle" font-size="10.5" font-weight="900" fill="#0f172a">LABS</text>
+    <text x="50" y="78" text-anchor="middle" font-size="6.2" font-weight="800" fill="#0f172a">INDIA</text>
+  </svg>`;
+}
+
+function renderReport() {
+  const box = document.getElementById('reportContainer');
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('d');
+    if (!encoded) {
+      box.innerHTML = '<div style="text-align:center;padding:30px;color:#b91c1c;font-weight:700;">Invalid or missing report link. Please scan the QR code on your lab report again.</div>';
+      return;
+    }
+    const data = decodeBase64Url(encoded);
+    if (data.c1) document.documentElement.style.setProperty('--c1', data.c1);
+    if (data.c2) document.documentElement.style.setProperty('--c2', data.c2);
+
+    const labName = data.ln || 'SMART PATHOLOGY LAB';
+    const labTag = data.ls || 'Accurate Diagnostics & Digital Reporting System';
+    const labAddr = data.la || '391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.)';
+    const labPhone = data.lp || '9548593164';
+    const style = data.lh || 'banner';
+    const mono = labName.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'SP';
+    const addrLine = [labAddr, labPhone ? 'Mob.: ' + labPhone : ''].filter(Boolean).join(' • ');
+
+    let headerHtml = '';
+    if (style === 'none') {
+      headerHtml = '<div style="height:110px;"></div>';
+    } else if (style === 'classic' || style === 'compact') {
+      headerHtml = `
+        <div class="report-header-digital">
+          <div>
+            <div class="rep-lab-name">${esc(labName)}</div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--c2);">${esc(labTag)}</div>
+            <div style="font-size:0.74rem;color:#475569;">${esc(addrLine)}</div>
+          </div>
+          <div style="text-align:center;">
+            ${buildNablSvg()}
+            <div style="font-size:0.58rem;font-weight:900;">${esc(data.nb || 'NABL-M(EL)T-02677')}</div>
+          </div>
+        </div>`;
+    } else {
+      headerHtml = `
+        <div class="lh-banner-wrap">
+          <div class="lh-banner-top">
+            <div class="lh-banner-left-panel">
+              <div class="lh-banner-curve-disk">
+                <div class="lh-banner-monogram">${esc(mono)}</div>
+                <div class="lh-banner-sub-badge">${esc(labName)}</div>
+              </div>
+            </div>
+            <div class="lh-banner-right-col">
+              <div class="lh-banner-nabl-row">
+                <div class="lh-banner-tagline-note">${esc(labTag)}</div>
+                <div style="text-align:center;">
+                  ${buildNablSvg()}
+                  <div style="font-size:0.58rem;font-weight:900;">${esc(data.nb || 'NABL-M(EL)T-02677')}</div>
+                </div>
+              </div>
+              <div class="lh-banner-ribbon">
+                <div class="lh-banner-ribbon-title">${esc(labName)}</div>
+              </div>
+            </div>
+          </div>
+          <div class="lh-banner-address-bar">${esc(addrLine)}</div>
+        </div>`;
+    }
+
+    // Group tests by department; handle both array format [dept, name, val, unit, ref, flag] and object format {d, n, v, u, r, f}
+    const rawTests = Array.isArray(data.t) ? data.t : [];
+    const groups = {};
+    rawTests.forEach(item => {
+      const dept = Array.isArray(item) ? (item[0] || 'INVESTIGATIONS') : (item.d || item.dept || 'INVESTIGATIONS');
+      const name = Array.isArray(item) ? (item[1] || '-') : (item.n || item.name || '-');
+      const val  = Array.isArray(item) ? (item[2] ?? 'Pending') : (item.v ?? item.value ?? 'Pending');
+      const unit = Array.isArray(item) ? (item[3] || '') : (item.u || item.unit || '');
+      const ref  = Array.isArray(item) ? (item[4] || '') : (item.r || item.ref || '');
+      const flag = Array.isArray(item) ? (item[5] || '') : (item.f || item.flag || '');
+      if (!groups[dept]) groups[dept] = [];
+      groups[dept].push({ name, val, unit, ref, flag });
+    });
+
+    let rowsHtml = '';
+    Object.keys(groups).forEach(dept => {
+      rowsHtml += `<tr class="dept-banner-row"><td colspan="4">${esc(dept)}</td></tr>`;
+      groups[dept].forEach(t => {
+        const fl = String(t.flag || '').toUpperCase();
+        const valHtml = fl === 'H'
+          ? `<span class="flag-high">${esc(t.val)} (H)</span>`
+          : (fl === 'L' ? `<span class="flag-low">${esc(t.val)} (L)</span>` : `<strong>${esc(t.val)}</strong>`);
+        rowsHtml += `<tr>
+          <td>${esc(t.name)}</td>
+          <td>${valHtml}</td>
+          <td>${esc(t.unit)}</td>
+          <td>${esc(t.ref)}</td>
+        </tr>`;
+      });
+    });
+
+    if (!rowsHtml) {
+      rowsHtml = '<tr><td colspan="4" style="text-align:center;color:#64748b;">No test parameters found.</td></tr>';
+    }
+
+    box.innerHTML = `
+      <div class="watermark-layer">VERIFIED</div>
+      ${headerHtml}
+      <div class="patient-meta-grid">
+        <div><strong>Patient Name:</strong> ${esc(data.p || '-')}</div>
+        <div><strong>Lab Ref. No / ID:</strong> ${esc(data.id || '-')}</div>
+        <div><strong>Age / Gender:</strong> ${esc(data.as || '-')}</div>
+        <div><strong>Report Date:</strong> ${esc(data.dt || '-')}</div>
+        <div><strong>Referred By:</strong> ${esc(data.rf || 'Self')}</div>
+        <div><strong>Status:</strong> <span style="color:#059669;font-weight:800;">Verified</span></div>
+      </div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Investigation / Test</th>
+            <th>Result</th>
+            <th>Unit</th>
+            <th>Reference Range</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+
+      ${data.rm ? `<div style="margin-top:12px;padding:8px 10px;background:#f8fafc;border-left:3px solid var(--c1);font-size:0.82rem;position:relative;z-index:2;"><strong>Clinical Remark:</strong> ${esc(data.rm)}</div>` : ''}
+
+      <div style="text-align:center;font-size:0.75rem;color:#64748b;margin-top:14px;position:relative;z-index:2;">*** End of Report ***</div>
+
+      <div class="footer-sign">
+        <div style="font-size:0.72rem;color:#64748b;">Electronically verified report via ${esc(labName)} Online Portal</div>
+        <div style="text-align:center;min-width:170px;">
+          <div style="border-top:1.5px solid #0f172a;padding-top:4px;font-weight:800;">${esc(data.dr || 'Consultant Pathologist')}</div>
+          <div style="font-size:0.72rem;color:#475569;">Authorized Signatory</div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    box.innerHTML = '<div style="text-align:center;padding:30px;color:#b91c1c;font-weight:700;">Could not load report data. Please scan the QR code again.</div>';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', renderReport);
+</script>
+</body>
+</html>
