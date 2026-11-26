@@ -17,6 +17,13 @@
             }
             if (/[?&]cc=/.test(s)) {
                 document.documentElement.classList.add('pcc-isolated-mode');
+                window.addEventListener('DOMContentLoaded', function () {
+                    var shell = document.getElementById('appShell');
+                    if (shell && shell.parentNode) shell.parentNode.removeChild(shell);
+                    document.querySelectorAll('.modal-backdrop').forEach(function (m) {
+                        if (m.parentNode) m.parentNode.removeChild(m);
+                    });
+                });
             }
         })();
     </script>
@@ -797,6 +804,12 @@
                         <span>Report Preview, Print &amp; PDF</span>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <select id="pccRepSelect" style="width:auto;" onchange="renderPccReportView()"></select>
+                            <select id="pccLhStyleSelect" style="width:auto;" onchange="changePccLetterheadStyle(this.value)">
+                                <option value="banner">Letterhead: Banner</option>
+                                <option value="classic">Letterhead: Classic</option>
+                                <option value="compact">Letterhead: Compact</option>
+                                <option value="none">Without Header</option>
+                            </select>
                             <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print Report</button>
                             <button type="button" class="btn btn-success btn-sm" onclick="downloadCurrentReportPdf()">Download PDF</button>
                         </div>
@@ -4851,6 +4864,14 @@
         function openPccPatientReport(patId) {
             currentPreviewId = patId;
             switchPccView('pccReport');
+        }
+
+
+        function changePccLetterheadStyle(styleVal) {
+            brandCfg.lhStyle = styleVal || 'banner';
+            saveStore(KEYS.BRAND, brandCfg);
+            renderPccReportView();
+            showToast('Letterhead updated: ' + brandCfg.lhStyle);
         }
 
         function renderPccReportView() {
