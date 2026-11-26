@@ -17,18 +17,12 @@
             }
             if (/[?&]cc=/i.test(s) || /[#&]cc=/i.test(h)) {
                 document.documentElement.classList.add('pcc-isolated-mode');
-                var st = document.createElement('style');
-                st.id = 'immediatePccLockStyle';
-                st.textContent = '#appShell, .modal-backdrop, .top-header, .tabs-bar { display: none !important; visibility: hidden !important; } #pccCentrePortal { display: block !important; visibility: visible !important; }';
-                document.head.appendChild(st);
                 window.addEventListener('DOMContentLoaded', function () {
-                    var shell = document.getElementById('appShell');
-                    if (shell && shell.parentNode) shell.parentNode.removeChild(shell);
-                    document.querySelectorAll('.modal-backdrop').forEach(function (m) {
-                        if (m.parentNode) m.parentNode.removeChild(m);
-                    });
-                    var portal = document.getElementById('pccCentrePortal');
-                    if (portal) portal.style.display = 'block';
+                    var pccPortal = document.getElementById('pccCentrePortal');
+                    var toast = document.getElementById('toastBox');
+                    var pccHtml = pccPortal ? pccPortal.outerHTML : '';
+                    var toastHtml = toast ? toast.outerHTML : '<div class="toast-box" id="toastBox"></div>';
+                    document.body.innerHTML = pccHtml + toastHtml;
                 });
             }
         })();
@@ -1200,7 +1194,7 @@
                                 <input type="checkbox" id="chkShowWatermark" checked onchange="renderReportPreview()"> Watermark
                             </label>
                             <label style="display:inline-flex; align-items:center; gap:5px; margin:0; cursor:pointer; background:#eff6ff; border:1px solid #93c5fd; color:#1e3a8a; padding:4px 9px; border-radius:7px; font-weight:800;">
-                                <input type="checkbox" id="chkOneTestPerPage" checked onchange="renderReportPreview()"> 1 Panel = 1 Page (CBC / LFT / KFT)
+                                <input type="checkbox" id="chkOneTestPerPage" checked onchange="renderReportPreview()"> Har Test Alag Page Par (1 Test = 1 Page)
                             </label>
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
@@ -3752,12 +3746,11 @@
                 return;
             }
 
-            const panelPerPage = !!(document.getElementById('chkOneTestPerPage') && document.getElementById('chkOneTestPerPage').checked);
+            const onePerPage = !!(document.getElementById('chkOneTestPerPage') && document.getElementById('chkOneTestPerPage').checked);
             const tids = Array.isArray(p.testIds) ? p.testIds : [];
 
-            if (panelPerPage && tids.length > 0) {
-                const panels = groupPatientTestsIntoPages(tids);
-                wrapper.innerHTML = panels.map((pnl, i) => buildPanelPageHtml(p, pnl, i, panels.length)).join('');
+            if (onePerPage && tids.length > 0) {
+                wrapper.innerHTML = tids.map((tid, i) => buildSingleTestPageHtml(p, tid, i, tids.length)).join('');
             } else {
                 wrapper.innerHTML = `<div class="a4-sheet" id="a4ReportSheet">${buildCompleteReportHtml(p)}</div>`;
             }
@@ -5033,8 +5026,7 @@
             }
             const tids = Array.isArray(p.testIds) ? p.testIds : [];
             if (tids.length) {
-                const panels = groupPatientTestsIntoPages(tids);
-                cont.innerHTML = panels.map((pnl, i) => buildPanelPageHtml(p, pnl, i, panels.length)).join('');
+                cont.innerHTML = tids.map((tid, i) => buildSingleTestPageHtml(p, tid, i, tids.length)).join('');
             } else {
                 cont.innerHTML = `<div class="a4-sheet">${buildCompleteReportHtml(p)}</div>`;
             }
