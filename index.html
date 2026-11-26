@@ -2666,6 +2666,7 @@
             patientsList.unshift(newPat);
             saveStore(KEYS.PATIENTS, patientsList);
             updateCounters();
+            pushRecordToLiveRelay(newPat);
             if (cloudCfg.enabled && cloudCfg.url) pushRecordToCloud(newPat);
 
             document.getElementById('bkName').value = '';
@@ -4106,6 +4107,7 @@
                         <td style="display:flex; gap:4px; flex-wrap:wrap;">
                             <button type="button" class="btn btn-primary btn-sm" onclick="selectCentreForTerminal('${esc(c.code)}')">Use Code</button>
                             <button type="button" class="btn btn-success btn-sm" onclick="openCentreAsPcc('${esc(c.code)}')">Open PCC</button>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="copyPccDirectLink('${esc(c.code)}')">Copy Link</button>
                             ${c.code !== 'MAIN' ? `<button type="button" class="btn btn-danger btn-sm" onclick="removeCollectionCentre('${esc(c.code)}')">Del</button>` : ''}
                         </td>
                     </tr>
@@ -4258,13 +4260,79 @@
             showToast(`Pushed ${ok}/${patientsList.length} records to Google Sheet!`);
         }
 
+        /* =====================================================================
+           17B. MULTI-DEVICE / MULTI-LOCATION LIVE RELAY FOR PCC BOOKINGS
+           Uses a public room/topic so bookings at any Collection Centre appear
+           automatically in the Main Lab software even without Google Sheets setup.
+           ===================================================================== */
+        function getLiveRelayTopic() {
+            const k = String(cloudCfg.key || 'SPL_SYNC_2026').trim();
+            return 'spl_cc_live_' + k.replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
+        async function pushRecordToLiveRelay(rec) {
+            try {
+                const topic = getLiveRelayTopic();
+                await fetch('https://ntfy.sh/' + encodeURIComponent(topic), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ type: 'PCC_BOOKING', sentAt: Date.now(), record: rec })
+                });
+            } catch (e) {}
+        }
+
+        async function pullRecordsFromLiveRelay() {
+            try {
+                const topic = getLiveRelayTopic();
+                const res = await fetch('https://ntfy.sh/' + encodeURIComponent(topic) + '/json?poll=1&since=24h', { cache: 'no-store' });
+                if (!res.ok) return 0;
+                const lines = (await res.text()).trim().split('\n').filter(Boolean);
+                const map = new Map(patientsList.map(p => [p.id, p]));
+                let added = 0;
+                for (let i = 0; i < lines.length; i++) {
+                    try {
+                        const ev = JSON.parse(lines[i]);
+                        if (ev && typeof ev.message === 'string') {
+                            const payload = JSON.parse(ev.message);
+                            const r = payload && payload.record;
+                            if (r && r.id) {
+                                const existing = map.get(r.id);
+                                if (!existing) {
+                                    map.set(r.id, r);
+                                    added++;
+                                } else if ((Date.parse(r.updatedAt || '') || 0) > (Date.parse(existing.updatedAt || '') || 0)) {
+                                    map.set(r.id, r);
+                                    added++;
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+                if (added > 0) {
+                    patientsList = Array.from(map.values()).sort((a, b) => (b.id || '').localeCompare(a.id || ''));
+                    saveStore(KEYS.PATIENTS, patientsList);
+                    updateCounters();
+                    renderPendingQueue();
+                    renderWorkloadTab();
+                }
+                return added;
+            } catch (e) {
+                return 0;
+            }
+        }
+
         async function syncWithCloudNow() {
+            const relayAdded = await pullRecordsFromLiveRelay();
             const urlInput = document.getElementById('csUrl');
             const url = (urlInput && urlInput.value ? urlInput.value : cloudCfg.url || '').trim();
             const keyInput = document.getElementById('csKey');
             const key = (keyInput && keyInput.value ? keyInput.value : cloudCfg.key || 'SPL_SYNC_2026').trim();
             if (!url) {
-                showToast('Set your Google Apps Script Web App URL in "Cloud Sync & Role" first.');
+                if (relayAdded > 0) {
+                    showToast(`Pulled ${relayAdded} new booking(s) from Collection Centre!`);
+                } else {
+                    showToast('Live Centre Sync checked. Set Google Sheet URL for permanent cloud sheet backup.');
+                }
                 return;
             }
             try {
@@ -4363,7 +4431,41 @@
         /* =====================================================================
            18. BOOTSTRAP & HASH / POPSTATE LISTENERS
            ===================================================================== */
+        function buildPccDirectLink(code) {
+            const c = centresList.find(x => x.code === code) || { code: code, pin: '' };
+            const base = getCleanPortalBaseUrl();
+            const u = new URL(base);
+            u.searchParams.set('cc', c.code);
+            if (c.pin) u.searchParams.set('pin', c.pin);
+            u.searchParams.set('key', cloudCfg.key || 'SPL_SYNC_2026');
+            return u.toString();
+        }
+
+        function copyPccDirectLink(code) {
+            const link = buildPccDirectLink(code);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(link).then(() => showToast(`Link copied for ${code}!`)).catch(() => prompt('PCC Link:', link));
+            } else {
+                prompt('PCC Link:', link);
+            }
+        }
+
+        function applyUrlCentreParamIfPresent() {
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                const cc = (params.get('cc') || '').trim().toUpperCase();
+                const key = (params.get('key') || '').trim();
+                if (key) cloudCfg.key = key;
+                if (cc) {
+                    cloudCfg.centre = cc;
+                    cloudCfg.role = 'pcc';
+                    saveStore(KEYS.CLOUD, cloudCfg);
+                }
+            } catch (e) {}
+        }
+
         function bootApplication() {
+            applyUrlCentreParamIfPresent();
             const reportToken = getReportTokenFromUrl();
             if (reportToken) {
                 enterStrictPatientReportMode(reportToken);
@@ -4380,6 +4482,10 @@
             populatePreviewPatientDropdown();
             renderReportPreview();
             setupAutoSyncTimer();
+            pullRecordsFromLiveRelay();
+            setInterval(function () {
+                pullRecordsFromLiveRelay();
+            }, 10000);
         }
 
         window.addEventListener('hashchange', function () {
