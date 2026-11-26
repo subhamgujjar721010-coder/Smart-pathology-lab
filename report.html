@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Pathology Lab — Report</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --lh-bg: #eef4ff;
+      --lh-accent: #1d4ed8;
+      --lh-accent-dark: #0f172a;
+      --text-main: #111827;
+      --text-muted: #4b5563;
+      --border-soft: #d1d5db;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #f3f4f6;
+      color: var(--text-main);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .toolbar {
+      max-width: 820px;
+      margin: 0 auto 14px auto;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-download {
+      background: var(--lh-accent);
+      color: #ffffff;
+    }
+
+    .btn-print {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+    }
+
+    .report-sheet {
+      max-width: 820px;
+      margin: 0 auto;
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .letterhead {
+      background: var(--lh-bg);
+      border-bottom: 3px solid var(--lh-accent);
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .lab-title {
+      margin: 0;
+      font-size: 22px;
+      color: var(--lh-accent-dark);
+      font-weight: 700;
+    }
+
+    .lab-sub {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .badge {
+      background: #ffffff;
+      color: var(--lh-accent);
+      border: 1px solid var(--lh-accent);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 16px 22px;
+    }
+
+    .patient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px 18px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 13.5px;
+    }
+
+    th {
+      background: var(--lh-accent);
+      color: #ffffff;
+      text-align: left;
+      padding: 9px 10px;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      color: var(--text-main);
+    }
+
+    .dept-row td {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: var(--lh-accent-dark);
+    }
+
+    .flag-low {
+      color: #b45309;
+      font-weight: 700;
+    }
+
+    .flag-high {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .footer-box {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .remark-box {
+      flex: 1;
+      min-width: 240px;
+      font-size: 13px;
+      color: var(--text-main);
+      background: #f9fafb;
+      border-left: 4px solid var(--lh-accent);
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+
+    .qr-wrap {
+      text-align: center;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    #reportQrBox {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
+    }
+
+    .qr-caption {
+      margin-top: 4px;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .toolbar {
+        display: none !important;
+      }
+      .report-sheet {
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="btn btn-download" id="downloadReportBtn" type="button">Download Report</button>
+    <button class="btn btn-print" id="printReportBtn" type="button">Print / Save PDF</button>
+  </div>
+
+  <div class="report-sheet" id="reportSheet">
+    <div class="letterhead" id="letterheadBox">
+      <div>
+        <h1 class="lab-title" id="labName">SMART PATHOLOGY LAB</h1>
+        <p class="lab-sub" id="labAddress">
+          391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164
+        </p>
+      </div>
+      <div class="badge" id="labBadge">NABL M(EL)T-02677</div>
+    </div>
+
+    <div class="section">
+      <div class="patient-grid" id="patientDetails"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>INVESTIGATION / TEST</th>
+            <th>RESULT</th>
+            <th>UNIT</th>
+            <th>REFERENCE RANGE</th>
+          </tr>
+        </thead>
+        <tbody id="testRows"></tbody>
+      </table>
+
+      <div class="footer-box">
+        <div class="remark-box" id="clinicalRemark">
+          <strong>Clinical Remark:</strong> Borderline low hemoglobin and elevated glycemic control. Follow up advised.
+        </div>
+        <div class="qr-wrap">
+          <div id="reportQrBox"></div>
+          <div class="qr-caption" id="qrCaption">Scan to Verify</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const defaultReport = {
+      themeBg: "#eef4ff",
+      themeAccent: "#1d4ed8",
+      labName: "SMART PATHOLOGY LAB",
+      labAddress: "391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164",
+      badge: "NABL M(EL)T-02677",
+      patientName: "Mr. Rajesh Kumar",
+      labId: "SPL-2026-001",
+      ageGender: "45Y/Male",
+      reportDate: "2026-11-08",
+      referredBy: "Dr. A. K. Sharma",
+      status: "Verified",
+      remark: "Borderline low hemoglobin and elevated glycemic control. Follow up advised.",
+      items: [
+        { dept: "HAEMATOLOGY" },
+        { test: "Hemoglobin (Hb)", result: "12.4", flag: "L", unit: "g/dL", range: "13.0 - 17.0" },
+        { dept: "BIOCHEMISTRY" },
+        { test: "Fasting Blood Sugar (FBS)", result: "138", flag: "H", unit: "mg/dL", range: "70 - 100" },
+        { test: "Glycosylated Hemoglobin (HbA1c)", result: "7.1", flag: "H", unit: "%", range: "4.0 - 5.6" }
+      ]
+    };
+
+    function parseReportFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("data") || params.get("r");
+      if (encoded) {
+        try {
+          const jsonStr = decodeURIComponent(escape(atob(encoded)));
+          return { ...defaultReport, ...JSON.parse(jsonStr) };
+        } catch (e) {}
+      }
+
+      const idParam = params.get("id");
+      if (idParam) {
+        try {
+          const saved = JSON.parse(localStorage.getItem("spl_reports_" + idParam) || "null");
+          if (saved) return { ...defaultReport, ...saved };
+        } catch (e) {}
+      }
+
+      return {
+        ...defaultReport,
+        labId: idParam || defaultReport.labId
+      };
+    }
+
+    function renderReport(data) {
+      document.documentElement.style.setProperty("--lh-bg", data.themeBg || "#eef4ff");
+      document.documentElement.style.setProperty("--lh-accent", data.themeAccent || "#1d4ed8");
+
+      document.getElementById("labName").textContent = data.labName;
+      document.getElementById("labAddress").textContent = data.labAddress;
+      document.getElementById("labBadge").textContent = data.badge;
+      document.getElementById("clinicalRemark").innerHTML =
+        `<strong>Clinical Remark:</strong> ${data.remark}`;
+
+      document.getElementById("patientDetails").innerHTML = `
+        <div><strong>Patient Name:</strong> ${data.patientName}</div>
+        <div><strong>Lab Ref. No / ID:</strong> ${data.labId}</div>
+        <div><strong>Age / Gender:</strong> ${data.ageGender}</div>
+        <div><strong>Report Date:</strong> ${data.reportDate}</div>
+        <div><strong>Referred By:</strong> ${data.referredBy}</div>
+        <div><strong>Status:</strong> ${data.status}</div>
+      `;
+
+      const tbody = document.getElementById("testRows");
+      tbody.innerHTML = "";
+
+      data.items.forEach((row) => {
+        if (row.dept) {
+          tbody.innerHTML += `<tr class="dept-row"><td colspan="4">${row.dept}</td></tr>`;
+          return;
+        }
+        const flagClass = row.flag === "L" ? "flag-low" : row.flag === "H" ? "flag-high" : "";
+        const flagText = row.flag ? ` (${row.flag})` : "";
+        tbody.innerHTML += `
+          <tr>
+            <td>${row.test}</td>
+            <td class="${flagClass}">${row.result}${flagText}</td>
+            <td>${row.unit}</td>
+            <td>${row.range}</td>
+          </tr>
+        `;
+      });
+
+      const qrBox = document.getElementById("reportQrBox");
+      qrBox.innerHTML = "";
+      new QRCode(qrBox, {
+        text: window.location.href,
+        width: 96,
+        height: 96,
+        colorDark: "#111827",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      document.getElementById("qrCaption").textContent = data.labId;
+    }
+
+    function downloadHtmlReport(data) {
+      const fullHtml = "<!DOCTYPE html>
+" + document.documentElement.outerHTML;
+      const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${data.labId || "report"}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    const reportData = parseReportFromUrl();
+    renderReport(reportData);
+
+    document.getElementById("downloadReportBtn").addEventListener("click", () => {
+      downloadHtmlReport(reportData);
+    });
+
+    document.getElementById("printReportBtn").addEventListener("click", () => {
+      window.print();
+    });
+  </script>
+</body>
+</html>
