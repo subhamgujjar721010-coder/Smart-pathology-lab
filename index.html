@@ -15,6 +15,9 @@
             if (/[?&](report|r)=/.test(s) || /^#(report|r)=/.test(h)) {
                 document.documentElement.classList.add('patient-report-only-mode');
             }
+            if (/[?&]cc=/.test(s)) {
+                document.documentElement.classList.add('pcc-isolated-mode');
+            }
         })();
     </script>
     <style>
@@ -631,8 +634,13 @@
         }
     
         html.pcc-isolated-mode #appShell,
+        html.pcc-isolated-mode #appShell *,
         html.pcc-isolated-mode .modal-backdrop {
             display: none !important;
+        }
+        html.pcc-isolated-mode #pccCentrePortal,
+        html.pcc-isolated-mode #pccCentrePortal * {
+            visibility: visible;
         }
         html.pcc-isolated-mode #pccCentrePortal {
             display: block !important;
@@ -2511,6 +2519,10 @@
         function closeModal(id) {
             const el = document.getElementById(id);
             if (el) el.classList.remove('open');
+            if (id === 'brandingModal') {
+                document.documentElement.style.setProperty('--c1', brandCfg.c1 || '#0f2964');
+                document.documentElement.style.setProperty('--c2', brandCfg.c2 || '#0b7a3e');
+            }
         }
 
         function isPccRole() {
@@ -4682,9 +4694,12 @@
         function enterStrictPccMode(ccCode) {
             activePccCode = ccCode.toUpperCase();
             document.documentElement.classList.add('pcc-isolated-mode');
+            document.documentElement.style.setProperty('--c1', brandCfg.c1 || '#0f2964');
+            document.documentElement.style.setProperty('--c2', brandCfg.c2 || '#0b7a3e');
             const appShell = document.getElementById('appShell');
-            if (appShell && appShell.parentNode) {
-                appShell.parentNode.removeChild(appShell);
+            if (appShell) {
+                appShell.style.display = 'none';
+                if (appShell.parentNode) appShell.parentNode.removeChild(appShell);
             }
             const portal = document.getElementById('pccCentrePortal');
             if (portal) portal.style.display = 'block';
