@@ -1200,7 +1200,7 @@
                                 <input type="checkbox" id="chkShowWatermark" checked onchange="renderReportPreview()"> Watermark
                             </label>
                             <label style="display:inline-flex; align-items:center; gap:5px; margin:0; cursor:pointer; background:#eff6ff; border:1px solid #93c5fd; color:#1e3a8a; padding:4px 9px; border-radius:7px; font-weight:800;">
-                                <input type="checkbox" id="chkOneTestPerPage" checked onchange="renderReportPreview()"> 1 Test = 1 Page
+                                <input type="checkbox" id="chkOneTestPerPage" checked onchange="renderReportPreview()"> 1 Panel = 1 Page (CBC / LFT / KFT)
                             </label>
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
@@ -3609,6 +3609,138 @@
             `;
         }
 
+
+        function getPanelGroupNameForTest(t) {
+            if (!t) return 'GENERAL INVESTIGATIONS';
+            const code = String(t.code || '').toUpperCase();
+            const name = String(t.name || '').toUpperCase();
+            if (['HB', 'TLC', 'PLT', 'ESR', 'CBC', 'PCV', 'RBC', 'MCV', 'MCH', 'MCHC'].includes(code) || name.includes('HEMOGLOBIN') || name.includes('LEUCOCYTE') || name.includes('PLATELET')) {
+                return 'CBC (COMPLETE BLOOD COUNT)';
+            }
+            if (['SGOT', 'SGPT', 'BILI', 'BILIRUBIN', 'ALP', 'GGT', 'ALBUMIN', 'PROTEIN'].includes(code) || name.includes('SGOT') || name.includes('SGPT') || name.includes('BILIRUBIN')) {
+                return 'LFT (LIVER FUNCTION TEST)';
+            }
+            if (['UREA', 'CREAT', 'CREATININE', 'URIC', 'BUN', 'NA', 'K', 'CL'].includes(code) || name.includes('UREA') || name.includes('CREATININE') || name.includes('URIC ACID')) {
+                return 'KFT (KIDNEY FUNCTION TEST)';
+            }
+            if (['T3', 'T4', 'TSH', 'FT3', 'FT4'].includes(code) || name.includes('THYROID') || name.includes('THYROXINE') || name.includes('TRIIODOTHYRONINE')) {
+                return 'THYROID PROFILE';
+            }
+            if (['FBS', 'PPBS', 'RBS', 'HBA1C'].includes(code) || name.includes('BLOOD SUGAR') || name.includes('GLUCOSE') || name.includes('HBA1C')) {
+                return 'DIABETIC / BLOOD SUGAR PROFILE';
+            }
+            if (['CHOL', 'TG', 'HDL', 'LDL', 'VLDL'].includes(code) || name.includes('CHOLESTEROL') || name.includes('TRIGLYCERIDES') || name.includes('LIPID')) {
+                return 'LIPID PROFILE';
+            }
+            return t.dept || 'INVESTIGATIONS';
+        }
+
+        function groupPatientTestsIntoPages(testIds) {
+            const groupsOrder = [];
+            const groupsMap = new Map();
+            (testIds || []).forEach(tid => {
+                const t = testsList.find(x => x.id === tid) || {
+                    id: tid, code: tid, name: tid, dept: 'INVESTIGATIONS', unit: '', rangeText: ''
+                };
+                const grp = getPanelGroupNameForTest(t);
+                if (!groupsMap.has(grp)) {
+                    groupsMap.set(grp, []);
+                    groupsOrder.push(grp);
+                }
+                groupsMap.get(grp).push(t);
+            });
+            return groupsOrder.map(grp => ({ groupName: grp, tests: groupsMap.get(grp) }));
+        }
+
+        function buildPanelPageHtml(p, panelObj, pageIdx, totalPages) {
+            const showWm = document.getElementById('chkShowWatermark') ? document.getElementById('chkShowWatermark').checked : true;
+            const wmText = p.status === 'Verified' ? 'VERIFIED REPORT' : 'PROVISIONAL COPY';
+
+            let rowsHtml = `<tr class="dept-banner-row"><td colspan="5">${esc(panelObj.groupName)}</td></tr>`;
+            panelObj.tests.forEach(t => {
+                const val = (p.results && p.results[t.id]) || 'Pending';
+                const fl = evaluateFlag(val, t);
+                const valDisplay = fl.code === 'H'
+                    ? `<span style="color:#dc2626; font-weight:900;">${esc(val)} (H)</span>`
+                    : fl.code === 'L'
+                        ? `<span style="color:#2563eb; font-weight:900;">${esc(val)} (L)</span>`
+                        : `<strong>${esc(val)}</strong>`;
+                rowsHtml += `
+                    <tr>
+                        <td><strong>${esc(t.name)}</strong> (${esc(t.code || '')})</td>
+                        <td>${valDisplay}</td>
+                        <td>${esc(t.unit || '')}</td>
+                        <td>${esc(t.rangeText || '')}</td>
+                        <td>${esc(fl.code === 'N' ? 'Normal' : fl.label)}</td>
+                    </tr>
+                `;
+            });
+
+            const sigCount = Number(sigsCfg.count) || 2;
+            const activeSlots = (sigsCfg.slots || []).slice(0, sigCount);
+            const stampHtml = (sigsCfg.stampImg && sigsCfg.stampOnReport)
+                ? `<img src="${sigsCfg.stampImg}" alt="Lab Seal" style="max-height:${Math.min(72, Number(sigsCfg.stampSize) || 72)}px; opacity:0.9;">`
+                : '';
+
+            const sigsRowHtml = `
+                <div class="rep-footer-sigs" style="margin-top:8px; padding-top:8px;">
+                    ${sigsCfg.stampPos === 'left' ? `<div>${stampHtml}</div>` : ''}
+                    ${activeSlots.map(s => `
+                        <div class="sig-col">
+                            ${s.img ? `<img src="${s.img}" alt="Sig" style="max-height:36px;">` : '<div style="height:26px;"></div>'}
+                            <div style="font-weight:900; border-top:1px solid #334155; padding-top:3px;">${esc(s.name)}</div>
+                            <div style="font-size:0.7rem; color:#334155;">${esc(s.qual)}</div>
+                            <div style="font-size:0.7rem; color:var(--c1); font-weight:700;">${esc(s.role)}</div>
+                        </div>
+                    `).join('')}
+                    ${sigsCfg.stampPos !== 'left' ? `<div>${stampHtml}</div>` : ''}
+                </div>
+            `;
+
+            return `
+                <div class="single-test-a4-sheet">
+                    ${showWm ? `<div class="watermark-overlay">${esc(wmText)}</div>` : ''}
+                    <div>
+                        ${buildLetterheadHtml()}
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; font-weight:800; color:var(--c1); margin-bottom:6px;">
+                            <span>${esc(panelObj.groupName)}</span>
+                            <span>Page ${pageIdx + 1} of ${totalPages}</span>
+                        </div>
+                        <div class="pt-meta-box" style="padding:6px 10px; margin-bottom:8px;">
+                            <div>
+                                <p><strong>Patient Name:</strong> ${esc(p.title)} ${esc(p.name)}</p>
+                                <p><strong>Age / Gender:</strong> ${esc(p.age)} ${esc(p.ageUnit)} / ${esc(p.gender)}</p>
+                                <p><strong>Referred By:</strong> ${esc(p.refBy)}</p>
+                            </div>
+                            <div>
+                                <p><strong>Lab ID:</strong> ${esc(p.labId)} (${esc(p.centreCode || 'MAIN')})</p>
+                                <p><strong>Sample Date:</strong> ${esc(p.date)} ${esc(p.time)}</p>
+                                <p><strong>Sample Type:</strong> ${esc(p.sampleType)} • <strong>Status:</strong> ${esc(p.status)}</p>
+                            </div>
+                            ${buildQrAndBarcodeHtml(p)}
+                        </div>
+
+                        <table class="rep-table" style="margin-bottom:8px;">
+                            <thead>
+                                <tr>
+                                    <th>Test Investigation</th>
+                                    <th>Observed Result</th>
+                                    <th>Unit</th>
+                                    <th>Biological Ref. Interval</th>
+                                    <th>Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+
+                        ${p.remark ? `<div style="background:#f8fafc; border-left:3px solid var(--c1); padding:6px 10px; font-size:0.78rem; margin-top:6px;"><strong>Clinical Interpretation / Remarks:</strong> ${esc(p.remark)}</div>` : ''}
+                        <div style="text-align:center; font-size:0.7rem; color:#64748b; margin-top:6px;">*** Page ${pageIdx + 1} of ${totalPages} — End of ${esc(panelObj.groupName)} ***</div>
+                    </div>
+                    ${sigsRowHtml}
+                </div>
+            `;
+        }
+
         function renderReportPreview() {
             const sel = document.getElementById('prevPatientSelect');
             if (sel && sel.value) currentPreviewId = sel.value;
@@ -3620,11 +3752,12 @@
                 return;
             }
 
-            const oneTestPerPage = !!(document.getElementById('chkOneTestPerPage') && document.getElementById('chkOneTestPerPage').checked);
+            const panelPerPage = !!(document.getElementById('chkOneTestPerPage') && document.getElementById('chkOneTestPerPage').checked);
             const tids = Array.isArray(p.testIds) ? p.testIds : [];
 
-            if (oneTestPerPage && tids.length > 0) {
-                wrapper.innerHTML = tids.map((tid, i) => buildSingleTestPageHtml(p, tid, i, tids.length)).join('');
+            if (panelPerPage && tids.length > 0) {
+                const panels = groupPatientTestsIntoPages(tids);
+                wrapper.innerHTML = panels.map((pnl, i) => buildPanelPageHtml(p, pnl, i, panels.length)).join('');
             } else {
                 wrapper.innerHTML = `<div class="a4-sheet" id="a4ReportSheet">${buildCompleteReportHtml(p)}</div>`;
             }
@@ -4899,9 +5032,12 @@
                 return;
             }
             const tids = Array.isArray(p.testIds) ? p.testIds : [];
-            cont.innerHTML = tids.length
-                ? tids.map((tid, i) => buildSingleTestPageHtml(p, tid, i, tids.length)).join('')
-                : `<div class="a4-sheet">${buildCompleteReportHtml(p)}</div>`;
+            if (tids.length) {
+                const panels = groupPatientTestsIntoPages(tids);
+                cont.innerHTML = panels.map((pnl, i) => buildPanelPageHtml(p, pnl, i, panels.length)).join('');
+            } else {
+                cont.innerHTML = `<div class="a4-sheet">${buildCompleteReportHtml(p)}</div>`;
+            }
         }
 
         function bootApplication() {
