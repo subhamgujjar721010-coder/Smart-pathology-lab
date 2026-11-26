@@ -689,7 +689,7 @@
                 <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;">
                     <div>
                         <div style="font-size:1.15rem; font-weight:900;" id="pccPortalTitle">Collection Centre Portal</div>
-                        <div style="font-size:0.8rem; opacity:0.92;" id="pccPortalSub">Workload • Booking • Report Print &amp; PDF</div>
+                        <div style="font-size:0.8rem; opacity:0.92;" id="pccPortalSub">Workload • Booking • Report Print &amp; PDF • Locked Centre Mode</div>
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button type="button" class="btn btn-outline btn-sm" onclick="switchPccView('pccWorkload')">Workload</button>
@@ -3364,49 +3364,40 @@
 
         // Builds a clean, single query URL (<getCleanPortalBaseUrl()>?report=<base64url>) that no QR scanner strips
         function buildReportShareUrl(p) {
-            const base = getCleanPortalBaseUrl();
-            const sigCount = Number(sigsCfg.count) || 2;
-            const docs = (sigsCfg.slots || []).slice(0, sigCount).map(s => ({
-                n: s.name || '',
-                q: s.qual || '',
-                r: s.role || ''
-            }));
+            const base = OFFICIAL_GITHUB_PORTAL_URL;
             const compactPayload = {
-                l: brandCfg.labName,
-                a: brandCfg.address,
-                m: brandCfg.mobile,
-                g: brandCfg.tagline,
-                n: brandCfg.nablShow ? brandCfg.nablCert : '',
-                h: brandCfg.lhStyle === 'none' ? 'banner' : (brandCfg.lhStyle || 'banner'),
-                c1: brandCfg.c1,
-                c2: brandCfg.c2,
-                d: docs,
+                l: (brandCfg.labName || 'SMART PATHOLOGY LAB').slice(0, 28),
+                a: (brandCfg.address || '').slice(0, 36),
+                m: (brandCfg.mobile || '').slice(0, 15),
+                n: brandCfg.nablShow ? (brandCfg.nablCert || '').slice(0, 18) : '',
+                c1: brandCfg.c1 || '#0f2964',
+                c2: brandCfg.c2 || '#0b7a3e',
                 p: {
                     id: p.labId,
-                    nm: `${p.title} ${p.name}`,
-                    ag: `${p.age} ${p.ageUnit}`,
-                    sx: p.gender,
-                    rf: p.refBy,
-                    dt: `${p.date} ${p.time}`,
-                    sp: p.sampleType,
-                    st: p.status,
-                    rm: p.remark || '',
-                    t: p.testIds.map(tid => {
+                    nm: `${p.title || ''} ${p.name || ''}`.trim().slice(0, 28),
+                    ag: `${p.age || ''}${p.ageUnit ? p.ageUnit[0] : 'Y'}`,
+                    sx: p.gender ? p.gender[0] : '',
+                    dt: p.date || '',
+                    st: p.status || 'Verified',
+                    t: (p.testIds || []).map(tid => {
                         const t = testsList.find(x => x.id === tid) || {};
                         const val = (p.results && p.results[tid]) || 'Pending';
                         const fl = evaluateFlag(val, t);
                         return {
-                            nm: t.name || tid,
-                            dp: t.dept || '',
-                            v: val,
-                            u: t.unit || '',
-                            r: t.rangeText || '',
+                            nm: (t.code || t.name || tid).slice(0, 12),
+                            v: String(val).slice(0, 10),
+                            u: (t.unit || '').slice(0, 8),
+                            r: (t.rangeText || '').slice(0, 12),
                             fl: fl.code
                         };
                     })
                 }
             };
-            const token = base64UrlEncodeUtf8(JSON.stringify(compactPayload));
+            let token = base64UrlEncodeUtf8(JSON.stringify(compactPayload));
+            while (token.length > 260 && compactPayload.p.t.length > 1) {
+                compactPayload.p.t.pop();
+                token = base64UrlEncodeUtf8(JSON.stringify(compactPayload));
+            }
             return `${base}?report=${token}`;
         }
 
