@@ -629,6 +629,15 @@
             .a4-sheet { box-shadow: none !important; margin: 0 !important; width: 100% !important; min-height: auto !important; }
             .no-print { display: none !important; }
         }
+    
+        html.pcc-isolated-mode #appShell,
+        html.pcc-isolated-mode .modal-backdrop {
+            display: none !important;
+        }
+        html.pcc-isolated-mode #pccCentrePortal {
+            display: block !important;
+        }
+
     </style>
 </head>
 <body>
@@ -654,6 +663,142 @@
     <!-- =========================================================================
          MAIN LAB MANAGEMENT APPLICATION (HIDDEN WHEN IN PATIENT-ONLY PORTAL MODE)
          ========================================================================= -->
+    
+    <!-- =========================================================================
+         STRICT COLLECTION CENTRE PORTAL (ACTIVATED ON ?cc=CODE)
+         Shows ONLY that centre's Workload, Booking, and Report Print / PDF
+         ========================================================================= -->
+    <div id="pccCentrePortal" style="display:none; min-height:100vh; background:#f1f5f9; padding:14px 12px 40px;">
+        <div style="max-width:1180px; margin:0 auto;">
+            <div class="card no-print" style="background:linear-gradient(135deg, var(--c1), var(--c2)); color:#fff; margin-bottom:12px;">
+                <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;">
+                    <div>
+                        <div style="font-size:1.15rem; font-weight:900;" id="pccPortalTitle">Collection Centre Portal</div>
+                        <div style="font-size:0.8rem; opacity:0.92;" id="pccPortalSub">Workload • Booking • Report Print &amp; PDF</div>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="switchPccView('pccWorkload')">Workload</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="switchPccView('pccBooking')">New Booking</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="switchPccView('pccReport')">Report Print / PDF</button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="pullRecordsFromLiveRelay().then(() => renderPccPortalWorkload())">Sync</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PCC VIEW 1: CENTRE WORKLOAD -->
+            <div id="pccViewWorkload" class="pcc-view-panel">
+                <div class="card">
+                    <div class="card-title">
+                        <span id="pccWlHeading">Centre Workload</span>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="switchPccView('pccBooking')">+ New Booking</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Lab ID &amp; Date</th>
+                                    <th>Patient</th>
+                                    <th>Tests</th>
+                                    <th>Status</th>
+                                    <th>Billing</th>
+                                    <th>Print / PDF</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pccWlTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PCC VIEW 2: CENTRE BOOKING -->
+            <div id="pccViewBooking" class="pcc-view-panel" style="display:none;">
+                <div class="card">
+                    <div class="card-title"><span id="pccBkHeading">New Patient Booking</span></div>
+                    <div class="grid-3" style="margin-bottom:10px;">
+                        <div>
+                            <label>Mobile Number</label>
+                            <input type="tel" id="pccBkMobile" placeholder="10-digit mobile">
+                        </div>
+                        <div>
+                            <label>Title &amp; Patient Full Name *</label>
+                            <div style="display:flex; gap:6px;">
+                                <select id="pccBkTitle" style="width:88px;">
+                                    <option>Mr.</option>
+                                    <option>Mrs.</option>
+                                    <option>Ms.</option>
+                                    <option>Master</option>
+                                    <option>Baby</option>
+                                </select>
+                                <input type="text" id="pccBkName" placeholder="Patient full name">
+                            </div>
+                        </div>
+                        <div>
+                            <label>Age &amp; Gender *</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="number" id="pccBkAge" placeholder="Age" min="0" max="130" style="width:72px;">
+                                <select id="pccBkAgeUnit" style="width:84px;">
+                                    <option>Years</option>
+                                    <option>Months</option>
+                                    <option>Days</option>
+                                </select>
+                                <select id="pccBkGender">
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-3" style="margin-bottom:12px;">
+                        <div>
+                            <label>Referred By</label>
+                            <input type="text" id="pccBkRefBy" value="Self">
+                        </div>
+                        <div>
+                            <label>Sample Type</label>
+                            <select id="pccBkSampleType">
+                                <option>Whole Blood / Serum</option>
+                                <option>Whole Blood (EDTA)</option>
+                                <option>Serum</option>
+                                <option>Plasma (Fluoride)</option>
+                                <option>Urine</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Select Tests</label>
+                            <select id="pccBkTestSelect" onchange="addPccQuickTest(this.value)"></select>
+                        </div>
+                    </div>
+                    <div id="pccSelectedTestsBox" style="margin-bottom:12px; padding:8px; border:1px solid #cbd5e1; border-radius:7px; background:#f8fafc; font-size:0.84rem;">
+                        No tests selected.
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="font-weight:900; color:var(--c1); font-size:0.95rem;" id="pccBkTotalLbl">Total: ₹0</div>
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="btn btn-outline" onclick="clearPccBooking()">Clear</button>
+                            <button type="button" class="btn btn-success" onclick="savePccBooking()">Save Booking</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PCC VIEW 3: CENTRE REPORT PRINT & PDF -->
+            <div id="pccViewReport" class="pcc-view-panel" style="display:none;">
+                <div class="card no-print">
+                    <div class="card-title">
+                        <span>Report Preview, Print &amp; PDF</span>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <select id="pccRepSelect" style="width:auto;" onchange="renderPccReportView()"></select>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print Report</button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="downloadCurrentReportPdf()">Download PDF</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="pccReportSheetContainer"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="appShell">
         <header class="top-header no-print">
             <div class="header-inner">
@@ -1240,6 +1385,13 @@
                         <thead><tr><th>Code</th><th>Centre Name</th><th>PIN</th><th>Actions</th></tr></thead>
                         <tbody id="ccManageTableBody"></tbody>
                     </table>
+                </div>
+                <div id="pccGeneratedLinkBox" style="display:none; margin-top:10px; background:#ffffff; border:1.5px solid #0284c7; border-radius:8px; padding:8px;">
+                    <label style="color:#0369a1; margin-bottom:4px;">Collection Centre Link (Tap &amp; Copy):</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="pccGeneratedLinkInput" readonly onclick="this.select()" style="font-size:0.78rem; background:#f8fafc;">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="copyVisiblePccLinkInput()">Copy</button>
+                    </div>
                 </div>
             </div>
 
@@ -4441,13 +4593,62 @@
             return u.toString();
         }
 
+        function copyTextReliable(text) {
+            if (navigator.clipboard && window.isSecureContext && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackExecCopy(text));
+            }
+            return Promise.resolve(fallbackExecCopy(text));
+        }
+
+        function fallbackExecCopy(text) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.top = '0';
+                ta.style.left = '0';
+                ta.style.opacity = '0.01';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                ta.setSelectionRange(0, text.length);
+                const ok = document.execCommand('copy');
+                document.body.removeChild(ta);
+                return Boolean(ok);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function showPccLinkInBox(link) {
+            const box = document.getElementById('pccGeneratedLinkBox');
+            const inp = document.getElementById('pccGeneratedLinkInput');
+            if (box && inp) {
+                box.style.display = 'block';
+                inp.value = link;
+                inp.focus();
+                inp.select();
+            }
+        }
+
         function copyPccDirectLink(code) {
             const link = buildPccDirectLink(code);
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(link).then(() => showToast(`Link copied for ${code}!`)).catch(() => prompt('PCC Link:', link));
-            } else {
-                prompt('PCC Link:', link);
-            }
+            showPccLinkInBox(link);
+            copyTextReliable(link).then(ok => {
+                if (ok) showToast(`Link copied for ${code}!`);
+                else showToast('Link box shown below — tap & copy.');
+            });
+        }
+
+        function copyVisiblePccLinkInput() {
+            const inp = document.getElementById('pccGeneratedLinkInput');
+            if (!inp || !inp.value) return;
+            inp.focus();
+            inp.select();
+            copyTextReliable(inp.value).then(ok => {
+                showToast(ok ? 'Link copied!' : 'Tap & hold link to copy.');
+            });
         }
 
         function applyUrlCentreParamIfPresent() {
@@ -4464,7 +4665,220 @@
             } catch (e) {}
         }
 
+
+        let activePccCode = '';
+        let pccDraftTestIds = [];
+
+        function getCentreParamFromUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                const cc = (params.get('cc') || '').trim().toUpperCase();
+                return cc;
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function enterStrictPccMode(ccCode) {
+            activePccCode = ccCode.toUpperCase();
+            document.documentElement.classList.add('pcc-isolated-mode');
+            const appShell = document.getElementById('appShell');
+            if (appShell && appShell.parentNode) {
+                appShell.parentNode.removeChild(appShell);
+            }
+            const portal = document.getElementById('pccCentrePortal');
+            if (portal) portal.style.display = 'block';
+
+            const cObj = centresList.find(x => x.code.toUpperCase() === activePccCode);
+            const cLabel = cObj ? `${cObj.code} — ${cObj.name}` : activePccCode;
+            document.getElementById('pccPortalTitle').textContent = `${brandCfg.labName} • ${cLabel}`;
+            document.getElementById('pccPortalSub').textContent = `Centre Code: ${activePccCode} • Workload, Booking & Report Print / PDF`;
+            document.getElementById('pccWlHeading').textContent = `Workload (${activePccCode})`;
+            document.getElementById('pccBkHeading').textContent = `New Patient Booking (${activePccCode})`;
+
+            const tSel = document.getElementById('pccBkTestSelect');
+            if (tSel) {
+                tSel.innerHTML = '<option value="">-- Choose Test to Add --</option>' +
+                    testsList.map(t => `<option value="${esc(t.id)}">${esc(t.code)} — ${esc(t.name)} (₹${t.rate})</option>`).join('');
+            }
+
+            renderPccPortalWorkload();
+            switchPccView('pccWorkload');
+        }
+
+        function switchPccView(viewName) {
+            document.querySelectorAll('.pcc-view-panel').forEach(el => (el.style.display = 'none'));
+            if (viewName === 'pccBooking') {
+                document.getElementById('pccViewBooking').style.display = 'block';
+            } else if (viewName === 'pccReport') {
+                document.getElementById('pccViewReport').style.display = 'block';
+                renderPccReportView();
+            } else {
+                document.getElementById('pccViewWorkload').style.display = 'block';
+                renderPccPortalWorkload();
+            }
+        }
+
+        function renderPccPortalWorkload() {
+            const tbody = document.getElementById('pccWlTableBody');
+            if (!tbody) return;
+            const rows = patientsList.filter(p => (p.centreCode || 'MAIN').toUpperCase() === activePccCode);
+            if (!rows.length) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:16px; color:var(--muted);">No bookings yet for centre ${esc(activePccCode)}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = rows.map(p => {
+                const codes = p.testIds.map(id => (testsList.find(t => t.id === id) || {}).code || id).join(', ');
+                return `
+                    <tr>
+                        <td><strong>${esc(p.labId)}</strong><br><span style="font-size:0.75rem; color:var(--muted);">${esc(p.date)} ${esc(p.time)}</span></td>
+                        <td><strong>${esc(p.title)} ${esc(p.name)}</strong> (${esc(p.age)} ${esc(p.ageUnit)}/${esc(p.gender)})</td>
+                        <td style="font-size:0.78rem;">${esc(codes)}</td>
+                        <td><span class="status-badge ${p.status === 'Verified' ? 'st-verified' : 'st-pending'}">${esc(p.status)}</span></td>
+                        <td><strong>₹${p.net}</strong></td>
+                        <td style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="openPccPatientReport('${esc(p.id)}')">View / Print</button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="downloadPdfForId('${esc(p.id)}')">PDF</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function addPccQuickTest(tid) {
+            if (!tid) return;
+            if (!pccDraftTestIds.includes(tid)) pccDraftTestIds.push(tid);
+            document.getElementById('pccBkTestSelect').value = '';
+            renderPccDraftTests();
+        }
+
+        function removePccDraftTest(tid) {
+            pccDraftTestIds = pccDraftTestIds.filter(x => x !== tid);
+            renderPccDraftTests();
+        }
+
+        function clearPccBooking() {
+            pccDraftTestIds = [];
+            document.getElementById('pccBkMobile').value = '';
+            document.getElementById('pccBkName').value = '';
+            document.getElementById('pccBkAge').value = '';
+            renderPccDraftTests();
+        }
+
+        function renderPccDraftTests() {
+            const box = document.getElementById('pccSelectedTestsBox');
+            const lbl = document.getElementById('pccBkTotalLbl');
+            if (!pccDraftTestIds.length) {
+                box.textContent = 'No tests selected.';
+                lbl.textContent = 'Total: ₹0';
+                return;
+            }
+            let sum = 0;
+            box.innerHTML = pccDraftTestIds.map(tid => {
+                const t = testsList.find(x => x.id === tid);
+                if (!t) return '';
+                sum += Number(t.rate) || 0;
+                return `<span class="test-chip">${esc(t.code)} — ${esc(t.name)} (₹${t.rate}) <button type="button" onclick="removePccDraftTest('${esc(t.id)}')">&times;</button></span>`;
+            }).join('');
+            lbl.textContent = `Total: ₹${sum}`;
+        }
+
+        function savePccBooking() {
+            const name = (document.getElementById('pccBkName').value || '').trim();
+            const age = document.getElementById('pccBkAge').value;
+            if (!name || !age || !pccDraftTestIds.length) {
+                showToast('Enter Name, Age and select at least 1 test.');
+                return;
+            }
+            let sum = 0;
+            pccDraftTestIds.forEach(tid => {
+                const t = testsList.find(x => x.id === tid);
+                if (t) sum += Number(t.rate) || 0;
+            });
+            const yr = new Date().getFullYear();
+            const labId = `SPL-${yr}-${String(patientsList.length + 1).padStart(3, '0')}`;
+            const now = new Date();
+            const rec = {
+                id: 'pat_' + Date.now(),
+                labId,
+                date: getTodayISO(),
+                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                title: document.getElementById('pccBkTitle').value,
+                name,
+                age: Number(age),
+                ageUnit: document.getElementById('pccBkAgeUnit').value,
+                gender: document.getElementById('pccBkGender').value,
+                mobile: (document.getElementById('pccBkMobile').value || '').trim(),
+                email: '',
+                refBy: (document.getElementById('pccBkRefBy').value || '').trim() || 'Self',
+                centreCode: activePccCode,
+                sampleType: document.getElementById('pccBkSampleType').value,
+                testIds: [...pccDraftTestIds],
+                results: {},
+                remark: '',
+                status: 'Pending',
+                subtotal: sum,
+                discount: 0,
+                net: sum,
+                paid: sum,
+                due: 0,
+                payMode: 'Cash',
+                updatedAt: now.toISOString()
+            };
+            patientsList.unshift(rec);
+            saveStore(KEYS.PATIENTS, patientsList);
+            pushRecordToLiveRelay(rec);
+            clearPccBooking();
+            showToast(`Booking saved for ${activePccCode}: ${labId}`);
+            switchPccView('pccWorkload');
+        }
+
+        function openPccPatientReport(patId) {
+            currentPreviewId = patId;
+            switchPccView('pccReport');
+        }
+
+        function renderPccReportView() {
+            const rows = patientsList.filter(p => (p.centreCode || 'MAIN').toUpperCase() === activePccCode);
+            const sel = document.getElementById('pccRepSelect');
+            const cont = document.getElementById('pccReportSheetContainer');
+            if (!sel || !cont) return;
+
+            sel.innerHTML = rows.length
+                ? rows.map(p => `<option value="${esc(p.id)}">${esc(p.labId)} — ${esc(p.title)} ${esc(p.name)}</option>`).join('')
+                : '<option value="">No reports</option>';
+
+            if (currentPreviewId && rows.some(r => r.id === currentPreviewId)) {
+                sel.value = currentPreviewId;
+            } else if (rows.length) {
+                currentPreviewId = rows[0].id;
+                sel.value = currentPreviewId;
+            }
+
+            const p = rows.find(r => r.id === sel.value) || rows[0];
+            if (!p) {
+                cont.innerHTML = '<div class="card" style="text-align:center; padding:24px;">No report available for this centre.</div>';
+                return;
+            }
+            const tids = Array.isArray(p.testIds) ? p.testIds : [];
+            cont.innerHTML = tids.length
+                ? tids.map((tid, i) => buildSingleTestPageHtml(p, tid, i, tids.length)).join('')
+                : `<div class="a4-sheet">${buildCompleteReportHtml(p)}</div>`;
+        }
+
         function bootApplication() {
+            const ccParam = getCentreParamFromUrl();
+            if (ccParam) {
+                const params = new URLSearchParams(window.location.search || '');
+                const key = (params.get('key') || '').trim();
+                if (key) cloudCfg.key = key;
+                enterStrictPccMode(ccParam);
+                pullRecordsFromLiveRelay().then(() => renderPccPortalWorkload());
+                setInterval(() => {
+                    pullRecordsFromLiveRelay().then(() => renderPccPortalWorkload());
+                }, 10000);
+                return;
+            }
             applyUrlCentreParamIfPresent();
             const reportToken = getReportTokenFromUrl();
             if (reportToken) {
