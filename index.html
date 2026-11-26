@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: light only;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light only" />
+  <title>SMART PATHOLOGY LAB v2.6</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light only;
+      --navy: #141c6b;
+      --teal: #0b6b5c;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .v26-header {
+      background: linear-gradient(120deg, #161f75 0%, #11396b 48%, #0b6e5c 100%) !important;
+      color: #ffffff !important;
+      padding: 16px 16px 18px 16px;
+    }
+
+    .v26-top-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .v26-spl-box {
+      background-color: #ffffff !important;
+      color: #161f75 !important;
+      font-weight: 900;
+      font-size: 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      line-height: 1;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+    }
+
+    .v26-lab-title {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      color: #ffffff !important;
+    }
+
+    .v26-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .badge-ver {
+      background: rgba(15, 23, 42, 0.45);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .badge-role {
+      background: #0d9488;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.4px;
+    }
+
+    .badge-centre {
+      background: rgba(15, 23, 42, 0.55);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.4px;
+    }
+
+    .v26-addr {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #f1f5f9 !important;
+      font-weight: 600;
+    }
+
+    .v26-action-stack {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .v26-action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .v26-pill-btn {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff !important;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+    }
+
+    .status-chip {
+      background: rgba(15, 23, 42, 0.55);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 14px auto 36px auto;
+      padding: 0 12px;
+    }
+
+    /* Workflow Navigation Tabs (Admin Mode) */
+    .workflow-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .wf-btn {
+      border: 1px solid #cbd5e1;
+      background: #ffffff !important;
+      color: #0f172a !important;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wf-btn.active {
+      background: linear-gradient(90deg, #161f75 0%, #0b6e5c 100%) !important;
+      color: #ffffff !important;
+      border-color: transparent;
+    }
+
+    .count-pill {
+      background: rgba(15, 23, 42, 0.12);
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .wf-btn.active .count-pill {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    .panel {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .panel-title {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: #151e73 !important;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .form-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 5px;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14.5px;
+      background: #ffffff !important;
+      color: #0f172a !important;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .textarea { min-height: 64px; resize: vertical; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 8px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: 0.85fr 1fr 1.15fr;
+      gap: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #151e73 0%, #0b6b5c 100%) !important;
+      color: #ffffff !important;
+    }
+
+    .btn-secondary {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+
+    .btn-success {
+      background: #0d9488 !important;
+      color: #ffffff !important;
+    }
+
+    .btn-danger {
+      background: #fee2e2 !important;
+      color: #b91c1c !important;
+    }
+
+    .test-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin: 3px;
+    }
+
+    .test-chip button {
+      border: none;
+      background: transparent;
+      color: #b91c1c;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .data-table th {
+      background: #151e73 !important;
+      color: #ffffff !important;
+      text-align: left;
+      padding: 9px 10px;
+    }
+
+    .data-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #0f172a;
+      vertical-align: middle;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .st-pending { background: #fef3c7; color: #b45309; }
+    .st-verified { background: #dcfce7; color: #15803d; }
+
+    /* Report Sheet with Software D-Shape Letterhead */
+    .report-sheet {
+      background-color: #ffffff !important;
+      color: #111827 !important;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .sw-letterhead {
+      background-color: #ffffff !important;
+      padding: 14px 14px 10px 14px;
+      border-bottom: 2px solid #0f172a;
+    }
+
+    .lh-banner-grid {
+      display: grid;
+      grid-template-columns: 1.12fr 0.76fr 0.34fr;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .lh-left-card {
+      background: linear-gradient(135deg, #151e73 0%, #102a6e 52%, #0a6d5d 100%) !important;
+      border-radius: 2px;
+      padding: 10px 12px 10px 0;
+      display: flex;
+      align-items: center;
+      min-height: 128px;
+    }
+
+    .lh-d-shape {
+      background-color: #ffffff !important;
+      border-top-right-radius: 70px;
+      border-bottom-right-radius: 70px;
+      padding: 12px 16px 12px 10px;
+      width: 92%;
+      text-align: center;
+    }
+
+    .lh-sp-logo {
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .lh-sp-s { color: #151e73; }
+    .lh-sp-p { color: #0b6b5c; }
+
+    .lh-pill-sub {
+      margin-top: 3px;
+      font-size: 9px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .lh-mid-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .lh-tagline {
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .lh-right-title-box {
+      background: linear-gradient(135deg, #151e73 0%, #0f3d68 55%, #0b6b5c 100%) !important;
+      color: #ffffff !important;
+      border-radius: 2px;
+      padding: 8px 6px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1.15;
+    }
+
+    .lh-right-col { text-align: center; }
+
+    .nabl-seal {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #151e73;
+      color: #151e73;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .nabl-code {
+      margin-top: 4px;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .lh-address-bar {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .report-body-pad { padding: 14px 16px 18px 16px; }
+
+    .patient-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .report-table th {
+      background: linear-gradient(90deg, #151e73 0%, #0f3d68 65%, #0b6b5c 100%) !important;
+      color: #ffffff !important;
+      text-align: left;
+      padding: 8px 10px;
+    }
+
+    .report-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #111827;
+    }
+
+    .report-footer {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .sig-img-preview {
+      max-height: 42px;
+      max-width: 140px;
+      display: block;
+      margin: 0 auto 4px auto;
+      object-fit: contain;
+    }
+
+    .sig-line {
+      border-top: 1.5px solid #0f172a;
+      padding-top: 4px;
+      font-size: 12px;
+      font-weight: 800;
+      min-width: 165px;
+      text-align: center;
+    }
+
+    .qr-box {
+      text-align: center;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+
+    .qr-box img {
+      width: 92px;
+      height: 92px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .cc-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media print {
+      .v26-header, .drawer-box, .workflow-tabs, .no-print { display: none !important; }
+      body, .container, .panel, .report-sheet { background: #ffffff !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="v26-header">
+    <div class="v26-top-row">
+      <div class="v26-spl-box">SPL</div>
+      <div>
+        <h1 class="v26-lab-title" id="hdrLabName">SMART PATHOLOGY LAB</h1>
+        <div class="v26-badges">
+          <span class="badge-ver">v2.6</span>
+          <span class="badge-role" id="hdrRoleBadge">ADMIN LAB</span>
+          <span class="badge-centre" id="hdrCentreBadge">MAIN</span>
+        </div>
+        <div class="v26-addr" id="hdrAddress">
+          391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin-only Header Drawers -->
+    <div class="v26-action-stack" id="adminTopActions">
+      <button type="button" class="v26-pill-btn" onclick="toggleDrawer('syncDrawer')">
+        <span>☁️</span>
+        <span>Cloud Sync &amp; Role</span>
+        <span class="status-chip">Offline</span>
+      </button>
+
+      <button type="button" class="v26-pill-btn" onclick="toggleDrawer('brandingDrawer')">
+        <span>🎨</span>
+        <span>Branding, Letterhead &amp; NABL</span>
+      </button>
+
+      <div class="v26-action-row">
+        <button type="button" class="v26-pill-btn" onclick="toggleDrawer('sigDrawer')">
+          <span>✍️</span>
+          <span>Signatures &amp; Stamp</span>
+        </button>
+        <button type="button" class="v26-pill-btn" onclick="toggleDrawer('backupDrawer')">
+          <span>💾</span>
+          <span>Backup / Restore</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Collection Centre Mode Banner (Shown ONLY in Collection Centre Mode) -->
+    <div id="ccModeBanner" class="cc-notice" style="display:none;">
+      <span id="ccModeText">Collection Centre Booking Portal</span>
+      <button type="button" class="btn btn-secondary" onclick="exitCentreMode()">Admin Lab Login</button>
+    </div>
+
+    <!-- Admin Drawers -->
+    <div id="syncDrawer" class="panel drawer-box" style="display:none;">
+      <h3 class="panel-title">Collection Centres &amp; Access Codes</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Centre Name</label>
+          <input id="ccNameInput" class="input" type="text" placeholder="Civil Lines Centre" />
+        </div>
+        <div class="field">
+          <label>Centre Code</label>
+          <input id="ccCodeInput" class="input" type="text" placeholder="CC-01" />
+        </div>
+        <div class="field">
+          <label>4-Digit PIN</label>
+          <input id="ccPinInput" class="input" type="text" placeholder="4829" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button type="button" class="btn btn-primary" onclick="addCentre()">+ Save Centre</button>
+        <button type="button" class="btn btn-secondary" onclick="randomPin()">Generate PIN</button>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Centre Name</th>
+            <th>Code</th>
+            <th>PIN</th>
+            <th>Share Link &amp; PIN</th>
+          </tr>
+        </thead>
+        <tbody id="ccTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="brandingDrawer" class="panel drawer-box" style="display:none;">
+      <h3 class="panel-title">Branding, Letterhead &amp; NABL</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Lab Name</label>
+          <input id="cfgLabName" class="input" type="text" value="SMART PATHOLOGY LAB" />
+        </div>
+        <div class="field">
+          <label>NABL Code</label>
+          <input id="cfgNabl" class="input" type="text" value="NABL-M(EL)T-02677" />
+        </div>
+        <div class="field">
+          <label>Address &amp; Mobile</label>
+          <input id="cfgAddress" class="input" type="text" value="391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164" />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" style="margin-top:10px;" onclick="saveBranding()">Save Branding</button>
+    </div>
+
+    <div id="sigDrawer" class="panel drawer-box" style="display:none;">
+      <h3 class="panel-title">Signatures &amp; Stamp</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Doctor / Pathologist Name</label>
+          <input id="cfgDoctor" class="input" type="text" value="Dr. A. K. Sharma, MD" />
+        </div>
+        <div class="field">
+          <label>Designation</label>
+          <input id="cfgRoleTitle" class="input" type="text" value="Consultant Pathologist" />
+        </div>
+        <div class="field">
+          <label>Upload Signature Image (Optional)</label>
+          <input id="cfgSigFile" class="input" type="file" accept="image/*" onchange="handleSigUpload(event)" />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" style="margin-top:10px;" onclick="saveBranding()">Save Signature</button>
+    </div>
+
+    <div id="backupDrawer" class="panel drawer-box" style="display:none;">
+      <h3 class="panel-title">Backup / Restore</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" onclick="downloadBackup()">Download JSON Backup</button>
+        <label class="btn btn-secondary" style="display:inline-block;">
+          Restore JSON
+          <input type="file" accept=".json" style="display:none;" onchange="restoreBackup(event)" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Admin Workflow Tabs (Hidden in Collection Centre Mode) -->
+    <div class="workflow-tabs" id="adminWorkflowTabs">
+      <button type="button" class="wf-btn active" onclick="showSection('secBooking', this)">1. Patient Booking</button>
+      <button type="button" class="wf-btn" onclick="showSection('secWorkload', this)">2. Daily Workload &amp; Pending <span class="count-pill" id="pendingCountPill">0</span></button>
+      <button type="button" class="wf-btn" onclick="showSection('secResult', this)">3. Result Entry &amp; Verify</button>
+      <button type="button" class="wf-btn" onclick="showSection('secReport', this)">4. Report View &amp; QR PDF</button>
+    </div>
+
+    <!-- SECTION 1: PATIENT BOOKING (Shown to both Admin & Collection Centre) -->
+    <div id="secBooking" class="wf-section">
+      <div class="panel">
+        <h3 class="panel-title">
+          <span id="bookingPanelHeading">New Patient Booking</span>
+          <button type="button" class="btn btn-secondary" id="adminSampleBtn" onclick="fillSamplePatient()">Fill Sample</button>
+        </h3>
+
+        <div class="form-stack">
+          <div class="field">
+            <label>Mobile Number (Type to Auto-Fill Repeat Patient)</label>
+            <input id="ptMobile" class="input" type="tel" placeholder="10-digit mobile" oninput="autoFillRepeatPatient()" />
+          </div>
+
+          <div class="field">
+            <label>Title &amp; Patient Full Name *</label>
+            <div class="row-2">
+              <select id="ptTitle" class="select">
+                <option value="Mr.">Mr.</option>
+                <option value="Mrs.">Mrs.</option>
+                <option value="Ms.">Ms.</option>
+                <option value="Master">Master</option>
+                <option value="Baby">Baby</option>
+              </select>
+              <input id="ptName" class="input" type="text" placeholder="Patient full name" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Age &amp; Gender *</label>
+            <div class="row-3">
+              <input id="ptAge" class="input" type="number" placeholder="Age" />
+              <select id="ptAgeUnit" class="select">
+                <option value="Years">Years</option>
+                <option value="Months">Months</option>
+                <option value="Days">Days</option>
+              </select>
+              <select id="ptGender" class="select">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Referred By Doctor / Clinic</label>
+            <input id="ptRef" class="input" type="text" value="Self" />
+          </div>
+
+          <div class="field">
+            <label>Collection Centre Code</label>
+            <input id="ptCentreCode" class="input" type="text" value="MAIN" />
+          </div>
+
+          <div class="field">
+            <label>Sample Type</label>
+            <select id="ptSampleType" class="select">
+              <option value="Whole Blood / Serum">Whole Blood / Serum</option>
+              <option value="EDTA Whole Blood">EDTA Whole Blood</option>
+              <option value="Fluoride Plasma (FBS/PPBS)">Fluoride Plasma (FBS/PPBS)</option>
+              <option value="Urine">Urine</option>
+              <option value="Stool">Stool</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Patient Email (Optional)</label>
+            <input id="ptEmail" class="input" type="email" placeholder="patient@example.com" />
+          </div>
+
+          <!-- Select Tests to Book -->
+          <div class="field">
+            <label>Select Tests to Book *</label>
+            <div class="form-grid">
+              <select id="bookDeptSelect" class="select">
+                <option value="HAEMATOLOGY">HAEMATOLOGY</option>
+                <option value="BIOCHEMISTRY">BIOCHEMISTRY</option>
+                <option value="IMMUNOLOGY">IMMUNOLOGY</option>
+                <option value="MICROBIOLOGY">MICROBIOLOGY</option>
+                <option value="CLINICAL PATHOLOGY">CLINICAL PATHOLOGY</option>
+              </select>
+              <input id="bookTestInput" class="input" type="text" list="commonTestsList" placeholder="Test name (e.g. CBC, FBS, HbA1c)" />
+              <datalist id="commonTestsList">
+                <option value="Hemoglobin (Hb)">
+                <option value="Complete Blood Count (CBC)">
+                <option value="Fasting Blood Sugar (FBS)">
+                <option value="Post Prandial Blood Sugar (PPBS)">
+                <option value="Glycosylated Hemoglobin (HbA1c)">
+                <option value="Lipid Profile">
+                <option value="Liver Function Test (LFT)">
+                <option value="Kidney Function Test (KFT)">
+                <option value="Thyroid Profile (T3, T4, TSH)">
+                <option value="Urine Routine & Microscopy">
+              </datalist>
+              <input id="bookFeeInput" class="input" type="number" placeholder="Fee (₹) Optional" />
+              <button type="button" class="btn btn-secondary" onclick="addBookedTestChip()">+ Add Test</button>
+            </div>
+            <div id="bookedTestsChips" style="margin-top:8px;"></div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
+            <button type="button" class="btn btn-primary" onclick="submitPatientBooking()">Save Booking</button>
+            <button type="button" class="btn btn-secondary" onclick="resetBookingForm()">Clear Form</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collection Centre Confirmation Box (Shown ONLY in Collection Centre Mode after saving) -->
+      <div id="ccSavedCard" class="panel" style="display:none;">
+        <h3 class="panel-title">Booking Submitted to Main Lab</h3>
+        <p id="ccSavedSummary" style="font-size:14px;line-height:1.5;margin:0 0 10px 0;"></p>
+        <button type="button" class="btn btn-primary" onclick="bookNextInCentre()">+ Book Next Patient</button>
+      </div>
+    </div>
+
+    <!-- SECTION 2: DAILY WORKLOAD & PENDING QUEUE (Admin Only) -->
+    <div id="secWorkload" class="wf-section" style="display:none;">
+      <div class="panel">
+        <h3 class="panel-title">
+          <span>Daily Workload &amp; Pending Queue</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="wlDateFilter" class="input" type="date" style="width:auto;" onchange="renderWorkloadTable()" />
+            <input id="wlSearchInput" class="input" type="text" placeholder="Search Name / ID / Centre..." style="width:200px;" oninput="renderWorkloadTable()" />
+          </div>
+        </h3>
+
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Lab ID</th>
+                <th>Date</th>
+                <th>Patient</th>
+                <th>Centre</th>
+                <th>Tests</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="workloadTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: RESULT ENTRY & VERIFICATION (Admin Only) -->
+    <div id="secResult" class="wf-section" style="display:none;">
+      <div class="panel">
+        <h3 class="panel-title">
+          <span id="resultEntryTitle">Result Entry &amp; Verification</span>
+          <span id="resultEntryIdBadge" class="status-badge st-pending">Select a patient from Workload</span>
+        </h3>
+
+        <div id="resultRowsEditor"></div>
+
+        <div class="field" style="margin-top:12px;">
+          <label>Clinical Remark</label>
+          <textarea id="resClinicalRemark" class="textarea" placeholder="Enter clinical remark..."></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <button type="button" class="btn btn-primary" onclick="saveTestResults(false)">Save Results</button>
+          <button type="button" class="btn btn-success" onclick="saveTestResults(true)">Verify &amp; Open Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: REPORT VIEW, QR CODE & PDF DOWNLOAD (Admin Only) -->
+    <div id="secReport" class="wf-section" style="display:none;">
+      <div class="panel no-print">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <strong style="font-size:15px;color:#151e73;">Verified Report &amp; QR Share</strong>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" onclick="downloadReportPdf()">Download PDF</button>
+            <button type="button" class="btn btn-secondary" onclick="window.print()">Print Report</button>
+            <button type="button" class="btn btn-secondary" onclick="openQrReportTab()">Open QR Page</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-sheet" id="reportSheet">
+        <div class="sw-letterhead">
+          <div class="lh-banner-grid">
+            <div class="lh-left-card">
+              <div class="lh-d-shape">
+                <div class="lh-sp-logo"><span class="lh-sp-s">S</span><span class="lh-sp-p">P</span></div>
+                <div class="lh-pill-sub" id="repPillName">SMART PATHOLOGY LAB</div>
+              </div>
+            </div>
+            <div class="lh-mid-col">
+              <div class="lh-tagline">Accurate<br />Diagnostics<br />&amp; Digital<br />Reporting<br />System</div>
+              <div class="lh-right-title-box" id="repBannerTitle">SMART<br />PATHOLOGY<br />LAB</div>
+            </div>
+            <div class="lh-right-col">
+              <div class="nabl-seal">NABL<br />INDIA</div>
+              <div class="nabl-code" id="repNabl">NABL-M(EL)T-02677</div>
+            </div>
+          </div>
+          <div class="lh-address-bar" id="repAddress">
+            391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164
+          </div>
+        </div>
+
+        <div class="report-body-pad">
+          <div class="patient-box" id="repPatientGrid"></div>
+
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>INVESTIGATION / TEST</th>
+                <th>RESULT</th>
+                <th>PREV. RESULT</th>
+                <th>UNIT</th>
+                <th>REFERENCE RANGE</th>
+              </tr>
+            </thead>
+            <tbody id="repRows"></tbody>
+          </table>
+
+          <div id="repRemarkBox" style="margin-top:12px;background:#f8fafc;border-left:4px solid #151e73;padding:8px 12px;font-size:12.5px;"></div>
+
+          <div class="report-footer">
+            <div style="text-align:center;">
+              <img id="repSigImg" class="sig-img-preview" style="display:none;" alt="Signature" />
+              <div class="sig-line" id="repSigName">Dr. A. K. Sharma, MD</div>
+              <div style="font-size:11px;color:#475569;" id="repSigRole">Consultant Pathologist</div>
+            </div>
+            <div class="qr-box">
+              <img id="repQrImg" alt="Report QR" crossorigin="anonymous" />
+              <div style="font-size:10.5px;font-weight:800;margin-top:4px;" id="repQrText">SPL-2026-001</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KEY_CFG = "spl_v26_cfg";
+    const KEY_CC = "spl_v26_centres";
+    const KEY_BOOK = "spl_v26_bookings";
+    const KEY_CC_ACTIVE = "spl_v26_active_cc";
+
+    let isCentreMode = false;
+    let bookedDraft = [];
+    let activeEditId = null;
+    let activeReportId = null;
+
+    const TEST_DEFAULTS = {
+      "Hemoglobin (Hb)": { dept: "HAEMATOLOGY", unit: "g/dL", range: "13.0 - 17.0" },
+      "Complete Blood Count (CBC)": { dept: "HAEMATOLOGY", unit: "cells/cumm", range: "4000 - 11000" },
+      "Fasting Blood Sugar (FBS)": { dept: "BIOCHEMISTRY", unit: "mg/dL", range: "70 - 100" },
+      "Post Prandial Blood Sugar (PPBS)": { dept: "BIOCHEMISTRY", unit: "mg/dL", range: "70 - 140" },
+      "Glycosylated Hemoglobin (HbA1c)": { dept: "BIOCHEMISTRY", unit: "%", range: "4.0 - 5.6" },
+      "Lipid Profile": { dept: "BIOCHEMISTRY", unit: "mg/dL", range: "< 200" },
+      "Liver Function Test (LFT)": { dept: "BIOCHEMISTRY", unit: "U/L", range: "10 - 40" },
+      "Kidney Function Test (KFT)": { dept: "BIOCHEMISTRY", unit: "mg/dL", range: "0.7 - 1.3" },
+      "Thyroid Profile (T3, T4, TSH)": { dept: "IMMUNOLOGY", unit: "uIU/mL", range: "0.4 - 4.2" },
+      "Urine Routine & Microscopy": { dept: "CLINICAL PATHOLOGY", unit: "-", range: "Normal" }
+    };
+
+    function getCfg() {
+      try {
+        return {
+          labName: "SMART PATHOLOGY LAB",
+          nabl: "NABL-M(EL)T-02677",
+          address: "391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164",
+          doctor: "Dr. A. K. Sharma, MD",
+          roleTitle: "Consultant Pathologist",
+          sigImage: "",
+          ...JSON.parse(localStorage.getItem(KEY_CFG) || "{}")
+        };
+      } catch (e) {
+        return {
+          labName: "SMART PATHOLOGY LAB",
+          nabl: "NABL-M(EL)T-02677",
+          address: "391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164",
+          doctor: "Dr. A. K. Sharma, MD",
+          roleTitle: "Consultant Pathologist",
+          sigImage: ""
+        };
+      }
+    }
+
+    function handleSigUpload(ev) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const cfg = getCfg();
+        cfg.sigImage = e.target.result;
+        localStorage.setItem(KEY_CFG, JSON.stringify(cfg));
+        applyCfg();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveBranding() {
+      const prev = getCfg();
+      const cfg = {
+        labName: document.getElementById("cfgLabName").value.trim() || "SMART PATHOLOGY LAB",
+        nabl: document.getElementById("cfgNabl").value.trim() || "NABL-M(EL)T-02677",
+        address: document.getElementById("cfgAddress").value.trim() || "391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164",
+        doctor: document.getElementById("cfgDoctor").value.trim() || "Dr. A. K. Sharma, MD",
+        roleTitle: document.getElementById("cfgRoleTitle").value.trim() || "Consultant Pathologist",
+        sigImage: prev.sigImage || ""
+      };
+      localStorage.setItem(KEY_CFG, JSON.stringify(cfg));
+      applyCfg();
+      if (activeReportId) renderReportById(activeReportId);
+      alert("Settings saved.");
+    }
+
+    function applyCfg() {
+      const cfg = getCfg();
+      document.getElementById("cfgLabName").value = cfg.labName;
+      document.getElementById("cfgNabl").value = cfg.nabl;
+      document.getElementById("cfgAddress").value = cfg.address;
+      document.getElementById("cfgDoctor").value = cfg.doctor;
+      document.getElementById("cfgRoleTitle").value = cfg.roleTitle;
+
+      document.getElementById("hdrLabName").textContent = cfg.labName;
+      document.getElementById("hdrAddress").textContent = cfg.address;
+      document.getElementById("repPillName").textContent = cfg.labName;
+      document.getElementById("repBannerTitle").innerHTML = cfg.labName.replace(/\s+/g, "<br />");
+      document.getElementById("repNabl").textContent = cfg.nabl;
+      document.getElementById("repAddress").textContent = cfg.address;
+      document.getElementById("repSigName").textContent = cfg.doctor;
+      document.getElementById("repSigRole").textContent = cfg.roleTitle;
+
+      const sigImg = document.getElementById("repSigImg");
+      if (cfg.sigImage) {
+        sigImg.src = cfg.sigImage;
+        sigImg.style.display = "block";
+      } else {
+        sigImg.style.display = "none";
+      }
+    }
+
+    function toggleDrawer(id) {
+      if (isCentreMode) return;
+      document.querySelectorAll(".drawer-box").forEach((d) => {
+        if (d.id !== id) d.style.display = "none";
+      });
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === "none" ? "block" : "none";
+    }
+
+    function showSection(secId, btn) {
+      if (isCentreMode && secId !== "secBooking") return;
+      document.querySelectorAll(".wf-section").forEach((s) => (s.style.display = "none"));
+      document.getElementById(secId).style.display = "block";
+      document.querySelectorAll(".wf-btn").forEach((b) => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+    }
+
+    /* Collection Centres */
+    function getCentres() {
+      try { return JSON.parse(localStorage.getItem(KEY_CC) || "[]"); } catch (e) { return []; }
+    }
+
+    function saveCentres(list) {
+      localStorage.setItem(KEY_CC, JSON.stringify(list));
+    }
+
+    function randomPin() {
+      document.getElementById("ccPinInput").value = String(Math.floor(1000 + Math.random() * 9000));
+    }
+
+    function addCentre() {
+      const name = document.getElementById("ccNameInput").value.trim();
+      const code = document.getElementById("ccCodeInput").value.trim().toUpperCase();
+      const pin = document.getElementById("ccPinInput").value.trim();
+      if (!name || !code || !pin) return alert("Centre Name, Code, aur PIN bharna zaroori hai.");
+
+      const list = getCentres().filter((c) => c.code !== code);
+      list.push({ name, code, pin });
+      saveCentres(list);
+
+      document.getElementById("ccNameInput").value = "";
+      document.getElementById("ccCodeInput").value = "";
+      document.getElementById("ccPinInput").value = "";
+      renderCentres();
+    }
+
+    function shareCentre(code) {
+      const c = getCentres().find((x) => x.code === code);
+      if (!c) return;
+      const url = window.location.origin + window.location.pathname + "?cc=" + encodeURIComponent(c.code) + "&pin=" + encodeURIComponent(c.pin);
+      const txt = "SMART PATHOLOGY LAB — Collection Centre (" + c.name + ")\nCode: " + c.code + "\nPIN: " + c.pin + "\nLink: " + url;
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => alert("Centre Link & PIN copy ho gaya!"));
+      else prompt("Copy link & PIN:", txt);
+    }
+
+    function renderCentres() {
+      const tbody = document.getElementById("ccTableBody");
+      const list = getCentres();
+      tbody.innerHTML = "";
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#64748b;">Abhi koi collection centre add nahi hai.</td></tr>';
+        return;
+      }
+      list.forEach((c) => {
+        tbody.innerHTML +=
+          "<tr><td><strong>" + c.name + "</strong></td><td>" + c.code + "</td><td><code>" + c.pin + "</code></td>" +
+          '<td><button type="button" class="btn btn-primary" onclick="shareCentre(\'' + c.code + '\')">Copy Link &amp; PIN</button></td></tr>';
+      });
+    }
+
+    function applyModeRestrictions() {
+      const params = new URLSearchParams(window.location.search);
+      const cc = params.get("cc");
+      const pin = params.get("pin");
+
+      if (cc && pin) {
+        const entered = prompt("Collection Centre (" + cc + ") ka PIN dalein:", pin);
+        if (entered === pin) {
+          sessionStorage.setItem(KEY_CC_ACTIVE, JSON.stringify({ code: cc, pin }));
+        } else {
+          alert("Galat PIN!");
+        }
+      }
+
+      const activeRaw = sessionStorage.getItem(KEY_CC_ACTIVE);
+      if (activeRaw) {
+        const active = JSON.parse(activeRaw);
+        isCentreMode = true;
+
+        document.getElementById("hdrRoleBadge").textContent = "COLLECTION CENTRE";
+        document.getElementById("hdrCentreBadge").textContent = active.code;
+        document.getElementById("ptCentreCode").value = active.code;
+        document.getElementById("ptCentreCode").readOnly = true;
+
+        /* Strictly hide all Admin panels, Workload, Result Entry, and Report View in Collection Centre mode */
+        document.getElementById("adminTopActions").style.display = "none";
+        document.getElementById("adminWorkflowTabs").style.display = "none";
+        document.getElementById("adminSampleBtn").style.display = "none";
+        document.getElementById("secWorkload").style.display = "none";
+        document.getElementById("secResult").style.display = "none";
+        document.getElementById("secReport").style.display = "none";
+
+        document.getElementById("ccModeBanner").style.display = "flex";
+        document.getElementById("ccModeText").textContent = "Collection Centre (" + active.code + ") — Patient Booking Only";
+        document.getElementById("bookingPanelHeading").textContent = "Collection Centre Patient Booking (" + active.code + ")";
+      } else {
+        isCentreMode = false;
+        document.getElementById("hdrRoleBadge").textContent = "ADMIN LAB";
+        document.getElementById("hdrCentreBadge").textContent = "MAIN";
+        document.getElementById("ptCentreCode").readOnly = false;
+      }
+    }
+
+    function exitCentreMode() {
+      sessionStorage.removeItem(KEY_CC_ACTIVE);
+      window.location.href = window.location.origin + window.location.pathname;
+    }
+
+    /* Bookings, Workload & Result Entry */
+    function getBookings() {
+      try { return JSON.parse(localStorage.getItem(KEY_BOOK) || "[]"); } catch (e) { return []; }
+    }
+
+    function saveBookings(list) {
+      localStorage.setItem(KEY_BOOK, JSON.stringify(list));
+      updatePendingCount();
+    }
+
+    function updatePendingCount() {
+      const pending = getBookings().filter((b) => b.status !== "Verified").length;
+      const pill = document.getElementById("pendingCountPill");
+      if (pill) pill.textContent = String(pending);
+    }
+
+    function autoFillRepeatPatient() {
+      const mob = document.getElementById("ptMobile").value.trim();
+      if (mob.length < 10) return;
+      const found = getBookings().find((b) => b.mobile === mob);
+      if (found) {
+        document.getElementById("ptName").value = found.rawName || "";
+        document.getElementById("ptAge").value = found.age || "";
+        document.getElementById("ptGender").value = found.gender || "Male";
+      }
+    }
+
+    function addBookedTestChip() {
+      const dept = document.getElementById("bookDeptSelect").value;
+      const name = document.getElementById("bookTestInput").value.trim();
+      const fee = document.getElementById("bookFeeInput").value.trim();
+      if (!name) return alert("Test name likhein.");
+
+      const meta = TEST_DEFAULTS[name] || { dept, unit: "", range: "" };
+      bookedDraft.push({
+        dept: meta.dept || dept,
+        test: name,
+        fee: fee || "0",
+        result: "",
+        prevResult: "-",
+        flag: "",
+        unit: meta.unit,
+        range: meta.range
+      });
+      document.getElementById("bookTestInput").value = "";
+      document.getElementById("bookFeeInput").value = "";
+      renderBookedChips();
+    }
+
+    function removeBookedChip(i) {
+      bookedDraft.splice(i, 1);
+      renderBookedChips();
+    }
+
+    function renderBookedChips() {
+      const wrap = document.getElementById("bookedTestsChips");
+      wrap.innerHTML = "";
+      bookedDraft.forEach((t, i) => {
+        wrap.innerHTML +=
+          '<span class="test-chip">' + t.test +
+          '<button type="button" onclick="removeBookedChip(' + i + ')">×</button></span>';
+      });
+    }
+
+    function fillSamplePatient() {
+      document.getElementById("ptMobile").value = "9876543210";
+      document.getElementById("ptTitle").value = "Mr.";
+      document.getElementById("ptName").value = "Rajesh Kumar";
+      document.getElementById("ptAge").value = "45";
+      document.getElementById("ptAgeUnit").value = "Years";
+      document.getElementById("ptGender").value = "Male";
+      document.getElementById("ptRef").value = "Dr. A. K. Sharma";
+      document.getElementById("ptSampleType").value = "Whole Blood / Serum";
+      bookedDraft = [
+        { dept: "HAEMATOLOGY", test: "Hemoglobin (Hb)", fee: "150", result: "12.4", prevResult: "12.8", flag: "L", unit: "g/dL", range: "13.0 - 17.0" },
+        { dept: "BIOCHEMISTRY", test: "Fasting Blood Sugar (FBS)", fee: "100", result: "138", prevResult: "126", flag: "H", unit: "mg/dL", range: "70 - 100" }
+      ];
+      renderBookedChips();
+    }
+
+    function resetBookingForm() {
+      document.getElementById("ptMobile").value = "";
+      document.getElementById("ptName").value = "";
+      document.getElementById("ptAge").value = "";
+      document.getElementById("ptRef").value = "Self";
+      document.getElementById("ptEmail").value = "";
+      bookedDraft = [];
+      renderBookedChips();
+    }
+
+    function submitPatientBooking() {
+      const rawName = document.getElementById("ptName").value.trim();
+      const age = document.getElementById("ptAge").value.trim();
+      if (!rawName || !age) return alert("Patient Full Name aur Age bharna zaroori hai.");
+
+      const inlineTest = document.getElementById("bookTestInput").value.trim();
+      if (inlineTest) addBookedTestChip();
+      if (!bookedDraft.length) return alert("Kam se kam ek test add karein.");
+
+      const title = document.getElementById("ptTitle").value;
+      const ageUnit = document.getElementById("ptAgeUnit").value;
+      const gender = document.getElementById("ptGender").value;
+      const centreCode = document.getElementById("ptCentreCode").value.trim().toUpperCase() || "MAIN";
+      const nowIso = new Date().toISOString();
+
+      const booking = {
+        id: "SPL-" + new Date().getFullYear() + "-" + String(getBookings().length + 1).padStart(3, "0"),
+        dateOnly: nowIso.slice(0, 10),
+        reportDate: nowIso.slice(0, 16).replace("T", " "),
+        mobile: document.getElementById("ptMobile").value.trim() || "-",
+        rawName,
+        patientName: title + " " + rawName,
+        age,
+        gender,
+        ageGender: age + " " + ageUnit + " / " + gender,
+        referredBy: document.getElementById("ptRef").value.trim() || "Self",
+        centreCode,
+        sampleType: document.getElementById("ptSampleType").value,
+        email: document.getElementById("ptEmail").value.trim(),
+        tests: bookedDraft.map((x) => ({ ...x })),
+        remark: "Follow up advised.",
+        status: "Pending"
+      };
+
+      const list = getBookings();
+      list.unshift(booking);
+      saveBookings(list);
+      resetBookingForm();
+
+      if (isCentreMode) {
+        const card = document.getElementById("ccSavedCard");
+        card.style.display = "block";
+        document.getElementById("ccSavedSummary").innerHTML =
+          "<strong>Lab ID:</strong> " + booking.id + "<br />" +
+          "<strong>Patient:</strong> " + booking.patientName + " (" + booking.ageGender + ")<br />" +
+          "<strong>Tests Booked:</strong> " + booking.tests.map((t) => t.test).join(", ") + "<br />" +
+          "<strong>Centre:</strong> " + booking.centreCode;
+      } else {
+        renderWorkloadTable();
+        const wlBtn = document.querySelectorAll(".wf-btn")[1];
+        showSection("secWorkload", wlBtn);
+      }
+    }
+
+    function bookNextInCentre() {
+      document.getElementById("ccSavedCard").style.display = "none";
+      resetBookingForm();
+    }
+
+    function renderWorkloadTable() {
+      const tbody = document.getElementById("workloadTableBody");
+      const dateVal = document.getElementById("wlDateFilter").value;
+      const q = (document.getElementById("wlSearchInput").value || "").toLowerCase().trim();
+
+      const list = getBookings().filter((b) => {
+        const dateOk = !dateVal || b.dateOnly === dateVal;
+        const textOk =
+          !q ||
+          b.patientName.toLowerCase().includes(q) ||
+          b.id.toLowerCase().includes(q) ||
+          b.centreCode.toLowerCase().includes(q);
+        return dateOk && textOk;
+      });
+
+      tbody.innerHTML = "";
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;">No bookings found in workload.</td></tr>';
+        return;
+      }
+
+      list.forEach((b) => {
+        const testNames = b.tests.map((t) => t.test).join(", ");
+        const badgeCls = b.status === "Verified" ? "st-verified" : "st-pending";
+        tbody.innerHTML +=
+          "<tr>" +
+          "<td><strong>" + b.id + "</strong></td>" +
+          "<td>" + b.reportDate + "</td>" +
+          "<td>" + b.patientName + "<br /><small style='color:#64748b;'>" + b.ageGender + "</small></td>" +
+          "<td><strong>" + b.centreCode + "</strong></td>" +
+          "<td>" + testNames + "</td>" +
+          '<td><span class="status-badge ' + badgeCls + '">' + b.status + "</span></td>" +
+          '<td style="display:flex;gap:6px;flex-wrap:wrap;">' +
+          '<button type="button" class="btn btn-primary" onclick="openResultEntry(\'' + b.id + '\')">Enter Result</button>' +
+          '<button type="button" class="btn btn-secondary" onclick="openReportView(\'' + b.id + '\')">Report</button>' +
+          '<button type="button" class="btn btn-danger" onclick="deleteBooking(\'' + b.id + '\')">Del</button>' +
+          "</td></tr>";
+      });
+    }
+
+    function deleteBooking(id) {
+      if (!confirm("Delete booking " + id + "?")) return;
+      saveBookings(getBookings().filter((b) => b.id !== id));
+      renderWorkloadTable();
+    }
+
+    function openResultEntry(id) {
+      const b = getBookings().find((x) => x.id === id);
+      if (!b) return;
+      activeEditId = id;
+      document.getElementById("resultEntryTitle").textContent = "Result Entry: " + b.patientName;
+      document.getElementById("resultEntryIdBadge").textContent = b.id + " (" + b.status + ")";
+      document.getElementById("resClinicalRemark").value = b.remark || "";
+
+      const editor = document.getElementById("resultRowsEditor");
+      editor.innerHTML = "";
+      b.tests.forEach((t, idx) => {
+        editor.innerHTML +=
+          '<div class="form-grid" style="border-bottom:1px solid #e2e8f0;padding-bottom:10px;margin-bottom:10px;">' +
+          '<div class="field"><label>Test (' + t.dept + ')</label><input class="input" type="text" value="' + t.test + '" readonly /></div>' +
+          '<div class="field"><label>Result *</label><input id="resVal_' + idx + '" class="input" type="text" value="' + (t.result || "") + '" placeholder="Enter value" /></div>' +
+          '<div class="field"><label>Flag</label><select id="resFlag_' + idx + '" class="select">' +
+          '<option value=""' + (t.flag === "" ? " selected" : "") + '>Normal</option>' +
+          '<option value="L"' + (t.flag === "L" ? " selected" : "") + '>Low (L)</option>' +
+          '<option value="H"' + (t.flag === "H" ? " selected" : "") + '>High (H)</option></select></div>' +
+          '<div class="field"><label>Unit</label><input id="resUnit_' + idx + '" class="input" type="text" value="' + (t.unit || "") + '" /></div>' +
+          '<div class="field"><label>Reference Range</label><input id="resRange_' + idx + '" class="input" type="text" value="' + (t.range || "") + '" /></div>' +
+          "</div>";
+      });
+
+      const resBtn = document.querySelectorAll(".wf-btn")[2];
+      showSection("secResult", resBtn);
+    }
+
+    function saveTestResults(verifyAndOpen) {
+      if (!activeEditId) return alert("Pehle Workload se patient chunein.");
+      const list = getBookings();
+      const b = list.find((x) => x.id === activeEditId);
+      if (!b) return;
+
+      b.tests.forEach((t, idx) => {
+        t.result = document.getElementById("resVal_" + idx).value.trim() || "-";
+        t.flag = document.getElementById("resFlag_" + idx).value;
+        t.unit = document.getElementById("resUnit_" + idx).value.trim();
+        t.range = document.getElementById("resRange_" + idx).value.trim();
+      });
+      b.remark = document.getElementById("resClinicalRemark").value.trim() || "Follow up advised.";
+      if (verifyAndOpen) b.status = "Verified";
+
+      saveBookings(list);
+      renderWorkloadTable();
+      if (verifyAndOpen) {
+        openReportView(b.id);
+      } else {
+        alert("Results saved!");
+      }
+    }
+
+    function buildQrReportUrl(b) {
+      const cfg = getCfg();
+      const grouped = [];
+      const seen = new Set();
+      b.tests.forEach((t) => {
+        if (t.dept && !seen.has(t.dept)) {
+          seen.add(t.dept);
+          grouped.push({ dept: t.dept });
+        }
+        grouped.push(t);
+      });
+
+      const payload = {
+        labName: cfg.labName,
+        nablCode: cfg.nabl,
+        address: cfg.address,
+        patientName: b.patientName,
+        labId: b.id,
+        ageGender: b.ageGender,
+        reportDate: b.reportDate,
+        referredBy: b.referredBy,
+        contact: b.mobile,
+        remark: b.remark,
+        signatures: [{ name: cfg.doctor, degree: cfg.roleTitle, image: cfg.sigImage || "" }],
+        items: grouped
+      };
+
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const basePath = window.location.href.split("?")[0].replace(/[^/]*$/, "");
+      return basePath + "report.html?data=" + encodeURIComponent(encoded);
+    }
+
+    function renderReportById(id) {
+      const list = getBookings();
+      const b = list.find((x) => x.id === id) || list[0];
+      if (!b) return;
+      activeReportId = b.id;
+
+      document.getElementById("repPatientGrid").innerHTML =
+        "<div><strong>Patient Name:</strong> " + b.patientName + "</div>" +
+        "<div><strong>Lab Ref. No / ID:</strong> " + b.id + "</div>" +
+        "<div><strong>Age / Gender:</strong> " + b.ageGender + "</div>" +
+        "<div><strong>Sample / Report Date:</strong> " + b.reportDate + "</div>" +
+        "<div><strong>Refered By:</strong> " + b.referredBy + "</div>" +
+        "<div><strong>Contact:</strong> " + b.mobile + "</div>";
+
+      const tbody = document.getElementById("repRows");
+      tbody.innerHTML = "";
+      const seen = new Set();
+      b.tests.forEach((t) => {
+        if (t.dept && !seen.has(t.dept)) {
+          seen.add(t.dept);
+          tbody.innerHTML += '<tr><td colspan="5" style="font-weight:900;color:#0b6b5c;border-left:4px solid #0b6b5c;">' + t.dept + "</td></tr>";
+        }
+        const flagStr = t.flag ? " (" + t.flag + ")" : "";
+        const colorStyle = t.flag === "H" ? "color:#b91c1c;font-weight:800;" : t.flag === "L" ? "color:#b45309;font-weight:800;" : "";
+        tbody.innerHTML +=
+          "<tr><td>" + t.test + "</td>" +
+          '<td style="' + colorStyle + '">' + (t.result || "Pending") + flagStr + "</td>" +
+          "<td>" + (t.prevResult || "-") + "</td>" +
+          "<td>" + (t.unit || "") + "</td>" +
+          "<td>" + (t.range || "") + "</td></tr>";
+      });
+
+      document.getElementById("repRemarkBox").innerHTML = "<strong>Clinical Remark:</strong> " + (b.remark || "Follow up advised.");
+      document.getElementById("repQrText").textContent = b.id;
+      document.getElementById("repQrImg").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=4&data=" +
+        encodeURIComponent(buildQrReportUrl(b));
+    }
+
+    function openReportView(id) {
+      renderReportById(id);
+      const repBtn = document.querySelectorAll(".wf-btn")[3];
+      showSection("secReport", repBtn);
+    }
+
+    function openQrReportTab() {
+      const b = getBookings().find((x) => x.id === activeReportId) || getBookings()[0];
+      if (!b) return;
+      window.open(buildQrReportUrl(b), "_blank");
+    }
+
+    function downloadReportPdf() {
+      const el = document.getElementById("reportSheet");
+      const name = (activeReportId || "report") + ".pdf";
+      if (typeof html2pdf === "function") {
+        html2pdf().set({ margin: 8, filename: name, html2canvas: { scale: 2, useCORS: true } }).from(el).save();
+      } else {
+        window.print();
+      }
+    }
+
+    function downloadBackup() {
+      const dump = JSON.stringify({ cfg: getCfg(), centres: getCentres(), bookings: getBookings() }, null, 2);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([dump], { type: "application/json" }));
+      a.download = "smart-pathology-lab-backup.json";
+      a.click();
+    }
+
+    function restoreBackup(ev) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.cfg) localStorage.setItem(KEY_CFG, JSON.stringify(parsed.cfg));
+          if (parsed.centres) saveCentres(parsed.centres);
+          if (parsed.bookings) saveBookings(parsed.bookings);
+          applyCfg();
+          renderCentres();
+          renderWorkloadTable();
+          alert("Backup restored!");
+        } catch (err) {
+          alert("Invalid backup file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /* Seed 1 default sample booking if empty so Admin sees full workflow immediately */
+    if (getBookings().length === 0) {
+      saveBookings([
+        {
+          id: "SPL-2026-001",
+          dateOnly: new Date().toISOString().slice(0, 10),
+          reportDate: "2026-11-07 09:15",
+          mobile: "9876543210",
+          rawName: "Rajesh Kumar",
+          patientName: "Mr. Rajesh Kumar",
+          age: "45",
+          gender: "Male",
+          ageGender: "45 Years / Male",
+          referredBy: "Dr. A. K. Sharma",
+          centreCode: "MAIN",
+          sampleType: "Whole Blood / Serum",
+          email: "",
+          tests: [
+            { dept: "HAEMATOLOGY", test: "Hemoglobin (Hb)", fee: "150", result: "12.4", prevResult: "12.8", flag: "L", unit: "g/dL", range: "13.0 - 17.0" },
+            { dept: "BIOCHEMISTRY", test: "Fasting Blood Sugar (FBS)", fee: "100", result: "138", prevResult: "126", flag: "H", unit: "mg/dL", range: "70 - 100" }
+          ],
+          remark: "Borderline low hemoglobin and elevated glycemic control. Follow up advised.",
+          status: "Verified"
+        }
+      ]);
+    }
+
+    applyCfg();
+    applyModeRestrictions();
+    renderCentres();
+    updatePendingCount();
+    renderWorkloadTable();
+    renderReportById("SPL-2026-001");
+  </script>
+</body>
+</html>
