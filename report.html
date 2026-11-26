@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: light only;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light only" />
+  <title>Smart Pathology Lab — Report</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light only;
+      --lh-bg: #eef4ff;
+      --lh-accent: #1d4ed8;
+      --lh-accent-dark: #0f172a;
+      --text-main: #111827;
+      --text-muted: #4b5563;
+      --border-soft: #d1d5db;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6 !important;
+      color: #111827 !important;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      padding: 14px;
+    }
+
+    .toolbar {
+      max-width: 820px;
+      margin: 0 auto 12px auto;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-download {
+      background-color: #1d4ed8 !important;
+      color: #ffffff !important;
+    }
+
+    .btn-print {
+      background-color: #ffffff !important;
+      color: #111827 !important;
+      border: 1px solid #d1d5db !important;
+    }
+
+    .report-sheet {
+      max-width: 820px;
+      margin: 0 auto;
+      background-color: #ffffff !important;
+      color: #111827 !important;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .letterhead {
+      background: linear-gradient(135deg, #eef4ff 0%, #dbeafe 100%) !important;
+      border-bottom: 3px solid #1d4ed8 !important;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .lab-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lab-logo-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #1d4ed8 !important;
+      color: #ffffff !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .lab-title {
+      margin: 0;
+      font-size: 21px;
+      color: #0f172a !important;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    .lab-sub {
+      margin: 4px 0 0 0;
+      font-size: 12.5px;
+      color: #334155 !important;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .badge {
+      background-color: #ffffff !important;
+      color: #1d4ed8 !important;
+      border: 1.5px solid #1d4ed8 !important;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .section {
+      padding: 16px 20px;
+      background-color: #ffffff !important;
+    }
+
+    .patient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px 18px;
+      background-color: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      color: #111827 !important;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      background-color: #ffffff !important;
+    }
+
+    th {
+      background-color: #1d4ed8 !important;
+      color: #ffffff !important;
+      text-align: left;
+      padding: 9px 10px;
+      font-weight: 700;
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0 !important;
+      color: #111827 !important;
+      background-color: #ffffff !important;
+    }
+
+    .dept-row td {
+      background-color: #eff6ff !important;
+      font-weight: 800;
+      color: #1e3a8a !important;
+    }
+
+    .flag-low {
+      color: #b45309 !important;
+      font-weight: 800;
+    }
+
+    .flag-high {
+      color: #b91c1c !important;
+      font-weight: 800;
+    }
+
+    .footer-box {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #cbd5e1 !important;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .remark-box {
+      flex: 1;
+      min-width: 230px;
+      font-size: 13px;
+      color: #111827 !important;
+      background-color: #f8fafc !important;
+      border-left: 4px solid #1d4ed8 !important;
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+
+    .qr-wrap {
+      text-align: center;
+      background-color: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    #reportQrImg {
+      width: 104px;
+      height: 104px;
+      display: block;
+      margin: 0 auto;
+      background-color: #ffffff !important;
+    }
+
+    .qr-caption {
+      margin-top: 5px;
+      font-size: 11px;
+      color: #334155 !important;
+      font-weight: 700;
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        padding: 0;
+      }
+      .toolbar {
+        display: none !important;
+      }
+      .report-sheet {
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="btn btn-download" id="downloadReportBtn" type="button">Download PDF</button>
+    <button class="btn btn-print" id="printReportBtn" type="button">Print Report</button>
+  </div>
+
+  <div class="report-sheet" id="reportSheet">
+    <div class="letterhead" id="letterheadBox">
+      <div class="lab-brand">
+        <div class="lab-logo-circle" id="labCircleText">SP</div>
+        <div>
+          <h1 class="lab-title" id="labName">SMART PATHOLOGY LAB</h1>
+          <p class="lab-sub" id="labAddress">
+            391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164
+          </p>
+        </div>
+      </div>
+      <div class="badge" id="labBadge">NABL M(EL)T-02677</div>
+    </div>
+
+    <div class="section">
+      <div class="patient-grid" id="patientDetails"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>INVESTIGATION / TEST</th>
+              <th>RESULT</th>
+              <th>UNIT</th>
+              <th>REFERENCE RANGE</th>
+            </tr>
+          </thead>
+          <tbody id="testRows"></tbody>
+        </table>
+      </div>
+
+      <div class="footer-box">
+        <div class="remark-box" id="clinicalRemark">
+          <strong>Clinical Remark:</strong> Borderline low hemoglobin and elevated glycemic control. Follow up advised.
+        </div>
+        <div class="qr-wrap">
+          <img id="reportQrImg" alt="Report QR Code" crossorigin="anonymous" />
+          <div class="qr-caption" id="qrCaption">SPL-2026-001</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const defaultReport = {
+      themeBg: "#eef4ff",
+      themeAccent: "#1d4ed8",
+      labName: "SMART PATHOLOGY LAB",
+      labAddress: "391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164",
+      badge: "NABL M(EL)T-02677",
+      patientName: "Mr. Rajesh Kumar",
+      labId: "SPL-2026-001",
+      ageGender: "45Y/Male",
+      reportDate: "2026-11-08",
+      referredBy: "Dr. A. K. Sharma",
+      status: "Verified",
+      remark: "Borderline low hemoglobin and elevated glycemic control. Follow up advised.",
+      items: [
+        { dept: "HAEMATOLOGY" },
+        { test: "Hemoglobin (Hb)", result: "12.4", flag: "L", unit: "g/dL", range: "13.0 - 17.0" },
+        { dept: "BIOCHEMISTRY" },
+        { test: "Fasting Blood Sugar (FBS)", result: "138", flag: "H", unit: "mg/dL", range: "70 - 100" },
+        { test: "Glycosylated Hemoglobin (HbA1c)", result: "7.1", flag: "H", unit: "%", range: "4.0 - 5.6" }
+      ]
+    };
+
+    function decodeBase64Json(str) {
+      try {
+        const clean = str.replace(/-/g, "+").replace(/_/g, "/");
+        const decoded = decodeURIComponent(escape(atob(clean)));
+        return JSON.parse(decoded);
+      } catch (e) {
+        try {
+          return JSON.parse(atob(str));
+        } catch (e2) {
+          return null;
+        }
+      }
+    }
+
+    function normalizeReport(raw) {
+      if (!raw || typeof raw !== "object") return { ...defaultReport };
+      const items = Array.isArray(raw.items)
+        ? raw.items
+        : Array.isArray(raw.tests)
+        ? raw.tests.map((t) => ({
+            dept: t.dept || t.department || "",
+            test: t.test || t.name || t.testName || "",
+            result: t.result || t.value || "",
+            flag: t.flag || "",
+            unit: t.unit || "",
+            range: t.range || t.refRange || ""
+          }))
+        : defaultReport.items;
+
+      return {
+        themeBg: raw.themeBg || raw.lhBg || defaultReport.themeBg,
+        themeAccent: raw.themeAccent || raw.lhAccent || defaultReport.themeAccent,
+        labName: raw.labName || defaultReport.labName,
+        labAddress: raw.labAddress || defaultReport.labAddress,
+        badge: raw.badge || defaultReport.badge,
+        patientName: raw.patientName || raw.name || defaultReport.patientName,
+        labId: raw.labId || raw.id || raw.refNo || defaultReport.labId,
+        ageGender: raw.ageGender || (raw.age ? raw.age + "/" + (raw.gender || "") : defaultReport.ageGender),
+        reportDate: raw.reportDate || raw.date || defaultReport.reportDate,
+        referredBy: raw.referredBy || raw.doctor || defaultReport.referredBy,
+        status: raw.status || defaultReport.status,
+        remark: raw.remark || raw.clinicalRemark || defaultReport.remark,
+        items: items
+      };
+    }
+
+    function parseReportFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("data") || params.get("r") || params.get("report") || params.get("d");
+      if (encoded) {
+        const parsed = decodeBase64Json(encoded);
+        if (parsed) return normalizeReport(parsed);
+      }
+
+      if (window.location.hash && window.location.hash.length > 2) {
+        const hashRaw = decodeURIComponent(window.location.hash.slice(1));
+        const parsedHash = decodeBase64Json(hashRaw);
+        if (parsedHash) return normalizeReport(parsedHash);
+      }
+
+      const idParam = params.get("id");
+      if (idParam) {
+        const keys = ["spl_reports_" + idParam, "report_" + idParam, idParam];
+        for (let i = 0; i < keys.length; i++) {
+          try {
+            const saved = JSON.parse(localStorage.getItem(keys[i]) || "null");
+            if (saved) return normalizeReport(saved);
+          } catch (e) {}
+        }
+        return normalizeReport({ labId: idParam });
+      }
+
+      return { ...defaultReport };
+    }
+
+    function applyTheme(data) {
+      const accent = data.themeAccent || "#1d4ed8";
+      const bg = data.themeBg || "#eef4ff";
+      document.getElementById("letterheadBox").style.setProperty("background", bg, "important");
+      document.getElementById("letterheadBox").style.setProperty("border-bottom-color", accent, "important");
+      document.getElementById("labCircleText").style.setProperty("background-color", accent, "important");
+      document.getElementById("labBadge").style.setProperty("color", accent, "important");
+      document.getElementById("labBadge").style.setProperty("border-color", accent, "important");
+      document.getElementById("clinicalRemark").style.setProperty("border-left-color", accent, "important");
+      document.getElementById("downloadReportBtn").style.setProperty("background-color", accent, "important");
+      document.querySelectorAll("th").forEach((th) => {
+        th.style.setProperty("background-color", accent, "important");
+      });
+    }
+
+    function renderReport(data) {
+      document.getElementById("labName").textContent = data.labName;
+      document.getElementById("labAddress").textContent = data.labAddress;
+      document.getElementById("labBadge").textContent = data.badge;
+      document.getElementById("clinicalRemark").innerHTML =
+        "<strong>Clinical Remark:</strong> " + data.remark;
+
+      document.getElementById("patientDetails").innerHTML =
+        "<div><strong>Patient Name:</strong> " + data.patientName + "</div>" +
+        "<div><strong>Lab Ref. No / ID:</strong> " + data.labId + "</div>" +
+        "<div><strong>Age / Gender:</strong> " + data.ageGender + "</div>" +
+        "<div><strong>Report Date:</strong> " + data.reportDate + "</div>" +
+        "<div><strong>Referred By:</strong> " + data.referredBy + "</div>" +
+        "<div><strong>Status:</strong> " + data.status + "</div>";
+
+      const tbody = document.getElementById("testRows");
+      tbody.innerHTML = "";
+
+      data.items.forEach(function (row) {
+        if (row.dept && !row.test) {
+          tbody.innerHTML += '<tr class="dept-row"><td colspan="4">' + row.dept + "</td></tr>";
+          return;
+        }
+        const flagClass = row.flag === "L" ? "flag-low" : row.flag === "H" ? "flag-high" : "";
+        const flagText = row.flag ? " (" + row.flag + ")" : "";
+        tbody.innerHTML +=
+          "<tr>" +
+          "<td>" + row.test + "</td>" +
+          '<td class="' + flagClass + '">' + row.result + flagText + "</td>" +
+          "<td>" + row.unit + "</td>" +
+          "<td>" + row.range + "</td>" +
+          "</tr>";
+      });
+
+      applyTheme(data);
+
+      const currentUrl = window.location.href;
+      const qrImg = document.getElementById("reportQrImg");
+      qrImg.src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=4&data=" +
+        encodeURIComponent(currentUrl);
+      document.getElementById("qrCaption").textContent = data.labId;
+    }
+
+    function downloadPdfReport(data) {
+      const element = document.getElementById("reportSheet");
+      const fileName = (data.labId || "report") + ".pdf";
+      if (typeof html2pdf === "function") {
+        html2pdf()
+          .set({
+            margin: 8,
+            filename: fileName,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+          })
+          .from(element)
+          .save();
+      } else {
+        window.print();
+      }
+    }
+
+    const reportData = parseReportFromUrl();
+    renderReport(reportData);
+
+    document.getElementById("downloadReportBtn").addEventListener("click", function () {
+      downloadPdfReport(reportData);
+    });
+
+    document.getElementById("printReportBtn").addEventListener("click", function () {
+      window.print();
+    });
+  </script>
+</body>
+</html>
