@@ -15,14 +15,20 @@
             if (/[?&](report|r)=/.test(s) || /^#(report|r)=/.test(h)) {
                 document.documentElement.classList.add('patient-report-only-mode');
             }
-            if (/[?&]cc=/.test(s)) {
+            if (/[?&]cc=/i.test(s) || /[#&]cc=/i.test(h)) {
                 document.documentElement.classList.add('pcc-isolated-mode');
+                var st = document.createElement('style');
+                st.id = 'immediatePccLockStyle';
+                st.textContent = '#appShell, .modal-backdrop, .top-header, .tabs-bar { display: none !important; visibility: hidden !important; } #pccCentrePortal { display: block !important; visibility: visible !important; }';
+                document.head.appendChild(st);
                 window.addEventListener('DOMContentLoaded', function () {
                     var shell = document.getElementById('appShell');
                     if (shell && shell.parentNode) shell.parentNode.removeChild(shell);
                     document.querySelectorAll('.modal-backdrop').forEach(function (m) {
                         if (m.parentNode) m.parentNode.removeChild(m);
                     });
+                    var portal = document.getElementById('pccCentrePortal');
+                    if (portal) portal.style.display = 'block';
                 });
             }
         })();
@@ -4688,7 +4694,12 @@
         function getCentreParamFromUrl() {
             try {
                 const params = new URLSearchParams(window.location.search || '');
-                const cc = (params.get('cc') || '').trim().toUpperCase();
+                let cc = (params.get('cc') || '').trim().toUpperCase();
+                if (!cc && window.location.hash) {
+                    const hashClean = window.location.hash.replace(/^#/, '');
+                    const hParams = new URLSearchParams(hashClean.includes('?') ? hashClean.split('?')[1] : hashClean);
+                    cc = (hParams.get('cc') || '').trim().toUpperCase();
+                }
                 return cc;
             } catch (e) {
                 return '';
@@ -4896,14 +4907,20 @@
         function bootApplication() {
             const ccParam = getCentreParamFromUrl();
             if (ccParam) {
-                const params = new URLSearchParams(window.location.search || '');
-                const key = (params.get('key') || '').trim();
-                if (key) cloudCfg.key = key;
-                enterStrictPccMode(ccParam);
-                pullRecordsFromLiveRelay().then(() => renderPccPortalWorkload());
-                setInterval(() => {
+                try {
+                    const params = new URLSearchParams(window.location.search || '');
+                    const key = (params.get('key') || '').trim();
+                    if (key) cloudCfg.key = key;
+                    enterStrictPccMode(ccParam);
                     pullRecordsFromLiveRelay().then(() => renderPccPortalWorkload());
-                }, 10000);
+                    setInterval(() => {
+                        pullRecordsFromLiveRelay().then(() => renderPccPortalWorkload());
+                    }, 10000);
+                } catch (e) {
+                    document.documentElement.classList.add('pcc-isolated-mode');
+                    const portal = document.getElementById('pccCentrePortal');
+                    if (portal) portal.style.display = 'block';
+                }
                 return;
             }
             applyUrlCentreParamIfPresent();
