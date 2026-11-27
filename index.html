@@ -336,6 +336,24 @@
               <input type="date" id="bkDate" />
             </div>
           </div>
+
+          <div class="form-row">
+            <div>
+              <label>Sample Barcode No. (Auto / Scan / Type)</label>
+              <div style="display:flex;gap:6px;">
+                <input type="text" id="bkBarcode" placeholder="e.g. BC2026001" style="font-family:monospace;font-weight:700;" />
+                <button type="button" class="btn btn-white btn-sm" onclick="generateNewBookingBarcode()">Auto</button>
+              </div>
+            </div>
+            <div>
+              <label>Sample Barcode Preview (Print / Sticker)</label>
+              <div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:4px 8px;">
+                <canvas id="bkBarcodeCanvas" width="180" height="42" style="height:34px;max-width:140px;background:#ffffff;"></canvas>
+                <button type="button" class="btn btn-dark btn-sm" onclick="printSampleBarcodeSlip()">Print Slip</button>
+              </div>
+            </div>
+          </div>
+
           <div class="form-row">
             <div>
               <label>Sample / Remark Options (Click to add or type freely)</label>
@@ -488,6 +506,7 @@
         <div class="kpi-box"><small>Total Billing (₹)</small><div id="kpiBilled">₹0</div></div>
         <div class="kpi-box"><small>Collected Amount (₹)</small><div id="kpiCollected">₹0</div></div>
         <div class="kpi-box"><small>Pending Due (₹)</small><div id="kpiDue" style="color:#dc2626;">₹0</div></div>
+        <div class="kpi-box"><small>Centre Commission Share</small><div id="kpiCentreComm" style="color:#0b6b5c;">₹0</div></div>
       </div>
 
       <div style="margin-bottom:10px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
@@ -820,13 +839,14 @@
       <div><label>Centre Name</label><input type="text" id="ccAddName" placeholder="Balaji Pathology Lab" /></div>
       <div><label>Centre Code</label><input type="text" id="ccAddCode" placeholder="BG001" /></div>
       <div><label>Access Code</label><input type="text" id="ccAddPin" placeholder="4829" /></div>
+      <div><label>Commission (%)</label><input type="number" id="ccAddComm" placeholder="20" value="20" min="0" max="100" /></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
       <button class="btn btn-primary btn-sm" onclick="addCentreEntry()">+ Add Centre</button>
       <button class="btn btn-white btn-sm" onclick="document.getElementById('ccAddPin').value=String(Math.floor(1000+Math.random()*9000))">Random Code</button>
     </div>
     <table>
-      <thead><tr><th>Centre</th><th>Code</th><th>Access Code</th><th>Action</th></tr></thead>
+      <thead><tr><th>Centre</th><th>Code</th><th>Access Code</th><th>Share %</th><th>Action</th></tr></thead>
       <tbody id="ccManageBody"></tbody>
     </table>
 
@@ -900,9 +920,9 @@ function doPost(e) {
 
 <!-- MODAL: EDIT BOOKING -->
 <div id="modalEditBooking" class="modal-backdrop">
-  <div class="modal-card">
+  <div class="modal-card" style="max-width:860px;">
     <div class="modal-head">
-      <h3>Edit Booking</h3>
+      <h3>Edit Booking &amp; Tests</h3>
       <button class="btn btn-white btn-sm" onclick="closeModal('modalEditBooking')">Close</button>
     </div>
     <input type="hidden" id="editBkId" />
@@ -923,8 +943,20 @@ function doPost(e) {
       <div><label>Referred By</label><input type="text" id="editBkRef" /></div>
       <div><label>Collection Centre</label><input type="text" id="editBkCentre" /></div>
       <div><label>Date</label><input type="date" id="editBkDate" /></div>
+      <div><label>Sample Barcode</label><input type="text" id="editBkBarcode" style="font-family:monospace;font-weight:700;" /></div>
     </div>
+
+    <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;background:#f8fafc;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <strong style="color:var(--primary);font-size:13px;">Booking Tests (<span id="editSelTestCount">0</span> selected)</strong>
+        <input type="text" id="editTestSearch" placeholder="Search test or code..." style="width:210px;padding:5px 8px;font-size:12px;" oninput="renderEditBookingTests()" />
+      </div>
+      <div id="editSelectedTestTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+      <div id="editBookingTestGrid" class="test-chip-grid" style="max-height:190px;"></div>
+    </div>
+
     <div class="form-row">
+      <div><label>Total (₹)</label><input type="number" id="editBkTotal" readonly /></div>
       <div><label>Discount (₹)</label><input type="number" id="editBkDiscount" oninput="recalcEditBilling()" /></div>
       <div><label>Paid (₹)</label><input type="number" id="editBkPaid" oninput="recalcEditBilling()" /></div>
       <div><label>Net (₹)</label><input type="number" id="editBkNet" readonly /></div>
@@ -936,6 +968,22 @@ function doPost(e) {
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
       <button class="btn btn-white" onclick="closeModal('modalEditBooking')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditedBooking()">Update Booking</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: BILL RECEIPT / SLIP -->
+<div id="modalBillReceipt" class="modal-backdrop">
+  <div class="modal-card" style="max-width:520px;">
+    <div class="modal-head">
+      <h3>Billing Receipt / Slip</h3>
+      <button class="btn btn-white btn-sm" onclick="closeModal('modalBillReceipt')">Close</button>
+    </div>
+    <div id="billReceiptContent" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:14px;font-size:12.5px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn btn-dark btn-sm" onclick="printBillReceiptSlip()">Print Receipt</button>
+      <button class="btn btn-white btn-sm" onclick="closeModal('modalBillReceipt')">Done</button>
     </div>
   </div>
 </div>
@@ -1963,12 +2011,14 @@ function addCentreEntry() {
   const name = document.getElementById('ccAddName').value.trim();
   const code = document.getElementById('ccAddCode').value.trim().toUpperCase();
   const pin = document.getElementById('ccAddPin').value.trim();
+  const commPct = Math.max(0, Math.min(100, Number(document.getElementById('ccAddComm')?.value || 20)));
   if (!name || !code || !pin) return alert('Centre Name, Code, and Access Code required.');
   state.centres = state.centres.filter(c => c.code !== code);
-  state.centres.push({ name, code, pin });
+  state.centres.push({ name, code, pin, commPct });
   document.getElementById('ccAddName').value = '';
   document.getElementById('ccAddCode').value = '';
-  document.getElementById('ccAddPin').value = '';
+  document.getElementById('ccAddPin').value = '4829';
+  document.getElementById('ccAddComm').value = 20;
   saveState();
 }
 
@@ -2014,6 +2064,7 @@ function renderCentreManageTable() {
       <td><strong>${c.name}</strong></td>
       <td>${c.code}</td>
       <td><code>${c.pin}</code></td>
+      <td><strong>${c.commPct ?? 20}%</strong></td>
       <td style="display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="copyCentreLink('${c.code}')">Copy Link</button>
         <button class="btn btn-danger btn-sm" onclick="deleteCentreEntry('${c.code}')">Del</button>
@@ -2180,6 +2231,7 @@ function removeSingleSelectedTest(id) {
 
 function clearSelectedTestsOnly() {
   selectedTestIds = [];
+  generateNewBookingBarcode();
   renderBookingTests();
   renderSelectedSummary();
 }
@@ -2255,6 +2307,66 @@ function resetBookingForm() {
   renderSelectedSummary();
 }
 
+
+let editSelectedTestIds = [];
+
+function drawBarcodeVisual(canvas, codeText) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const txt = String(codeText || 'SPL000').trim().toUpperCase();
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#0f172a';
+  let x = 10;
+  // Start guard
+  ctx.fillRect(x, 4, 2, h - 14); x += 4;
+  ctx.fillRect(x, 4, 1, h - 14); x += 3;
+  for (let i = 0; i < txt.length; i++) {
+    const chCode = txt.charCodeAt(i);
+    for (let b = 0; b < 6; b++) {
+      const bit = (chCode >> (b % 5)) ^ (i + b);
+      const barW = (bit % 2 === 0) ? 2 : 1;
+      if (b % 2 === 0) ctx.fillRect(x, 4, barW, h - 14);
+      x += barW + 1;
+      if (x > w - 14) break;
+    }
+    x += 2;
+    if (x > w - 14) break;
+  }
+  ctx.fillRect(x, 4, 2, h - 14);
+  ctx.font = 'bold 10px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(txt, w / 2, h - 2);
+}
+
+function generateNewBookingBarcode() {
+  const inp = document.getElementById('bkBarcode');
+  const num = String(Math.floor(100000 + Math.random() * 900000));
+  const code = 'SPL' + num;
+  if (inp) inp.value = code;
+  drawBarcodeVisual(document.getElementById('bkBarcodeCanvas'), code);
+  return code;
+}
+
+function printSampleBarcodeSlip() {
+  const code = (document.getElementById('bkBarcode')?.value || '').trim() || generateNewBookingBarcode();
+  const pName = (document.getElementById('bkName')?.value || 'Patient').trim();
+  const win = window.open('', '_blank', 'width=360,height=240');
+  if (!win) return;
+  const dataUrl = document.getElementById('bkBarcodeCanvas')?.toDataURL() || '';
+  win.document.write(`
+    <html><body style="font-family:sans-serif;text-align:center;padding:14px;">
+      <div style="font-size:12px;font-weight:700;">${state.settings.labName || 'SMART PATHOLOGY LAB'}</div>
+      <div style="font-size:11px;margin:2px 0 6px;">${pName}</div>
+      ${dataUrl ? `<img src="${dataUrl}" style="height:54px;" />` : ''}
+      <div style="font-family:monospace;font-size:13px;font-weight:800;margin-top:4px;">${code}</div>
+      <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);};<\/script>
+    </body></html>
+  `);
+  win.document.close();
+}
+
 async function saveBooking() {
   const name = document.getElementById('bkName').value.trim();
   const age = document.getElementById('bkAge').value.trim();
@@ -2293,9 +2405,11 @@ async function saveBooking() {
     };
   });
 
+  const barcodeNo = (document.getElementById('bkBarcode')?.value || '').trim() || ('SPL' + String(Math.floor(100000 + Math.random() * 900000)));
   const rec = {
     id: 'rec_' + centreVal + '_' + Date.now(),
     labId,
+    barcodeNo,
     date: document.getElementById('bkDate').value || new Date().toISOString().slice(0, 10),
     mobile: document.getElementById('bkMobile').value.trim(),
     name, age,
@@ -2347,6 +2461,8 @@ function renderPendingQueue() {
         <td style="display:flex;gap:5px;flex-wrap:wrap;">
           ${!isPccRole() ? `<button class="btn btn-primary btn-sm" onclick="jumpToResult('${p.id}')">Enter Result</button>` : ''}
           <button class="btn btn-warn btn-sm" onclick="openEditBookingModal('${p.id}')">Edit</button>
+          <button class="btn btn-white btn-sm" onclick="openBillReceiptModal('${p.id}')">Bill Slip</button>
+          <button class="btn btn-white btn-sm" onclick="reprintBarcodeById('${p.id}')">Barcode</button>
           <button class="btn btn-danger btn-sm" onclick="deleteBookingRecord('${p.id}')">Delete</button>
           <button class="btn btn-white btn-sm" onclick="jumpToPreview('${p.id}')">Preview</button>
         </td>
@@ -2554,15 +2670,10 @@ function autoFlagInput(idx, pid) {
     if (!el) return;
     const num = parseFloat(el.value.trim());
     let flag = '';
-    if (!isNaN(num)) {
-      if (it.min !== null && it.min !== '' && num < Number(it.min)) flag = 'L';
-      else if (it.max !== null && it.max !== '' && num > Number(it.max)) flag = 'H';
-    }
+    flag = computeFlagForItem(it, num);
     const cell = document.getElementById('resFlagCell_' + i);
     if (cell) {
-      cell.innerHTML = flag
-        ? `<span class="badge ${flag === 'H' ? 'bg-high' : 'bg-low'}">${flag === 'H' ? 'HIGH' : 'LOW'}</span>`
-        : 'Normal';
+      cell.innerHTML = renderFlagBadge(flag);
     }
   });
 }
@@ -2577,10 +2688,7 @@ function saveResults(pid, verify) {
     it.value = val;
     const num = parseFloat(val);
     it.flag = '';
-    if (!isNaN(num)) {
-      if (it.min !== null && it.min !== '' && num < Number(it.min)) it.flag = 'L';
-      else if (it.max !== null && it.max !== '' && num > Number(it.max)) it.flag = 'H';
-    }
+    it.flag = computeFlagForItem(it, num);
   });
 
   if (!p.deptComments) p.deptComments = {};
@@ -2632,12 +2740,25 @@ function renderWorkload() {
     return true;
   });
 
-  let billed = 0, collected = 0, due = 0;
-  filtered.forEach(p => { billed += Number(p.net || 0); collected += Number(p.paid || 0); due += Number(p.due || 0); });
+  let billed = 0, collected = 0, due = 0, commTotal = 0;
+  const commMap = new Map(state.centres.map(c => [(c.code || '').toUpperCase(), Number(c.commPct ?? 20)]));
+  filtered.forEach(p => {
+    const netAmt = Number(p.net || 0);
+    billed += netAmt;
+    collected += Number(p.paid || 0);
+    due += Number(p.due || 0);
+    const ccKey = (p.centreCode || 'MAIN').toUpperCase();
+    if (ccKey !== 'MAIN') {
+      const pct = commMap.has(ccKey) ? commMap.get(ccKey) : 20;
+      commTotal += Math.round((netAmt * pct) / 100);
+    }
+  });
   document.getElementById('kpiPatients').textContent = filtered.length;
   document.getElementById('kpiBilled').textContent = '₹' + billed;
   document.getElementById('kpiCollected').textContent = '₹' + collected;
   document.getElementById('kpiDue').textContent = '₹' + due;
+  const commEl = document.getElementById('kpiCentreComm');
+  if (commEl) commEl.textContent = '₹' + commTotal;
 
   document.getElementById('workloadTableBody').innerHTML = filtered.slice().reverse().map(p => `
     <tr>
@@ -2653,6 +2774,8 @@ function renderWorkload() {
       <td style="display:flex;gap:5px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="jumpToPreview('${p.id}')">Report</button>
         <button class="btn btn-warn btn-sm" onclick="openEditBookingModal('${p.id}')">Edit</button>
+        <button class="btn btn-white btn-sm" onclick="openBillReceiptModal('${p.id}')">Bill Slip</button>
+        <button class="btn btn-white btn-sm" onclick="reprintBarcodeById('${p.id}')">Barcode</button>
         <button class="btn btn-danger btn-sm" onclick="deleteBookingRecord('${p.id}')">Delete</button>
         ${!isPccRole() && Number(p.due || 0) > 0 ? `<button class="btn btn-success btn-sm" onclick="markDuePaid('${p.id}')">Pay Due</button>` : ''}
       </td>
@@ -2682,20 +2805,88 @@ function openEditBookingModal(pid) {
   document.getElementById('editBkCentre').value = p.centreCode || 'MAIN';
   document.getElementById('editBkCentre').disabled = isPccRole();
   document.getElementById('editBkDate').value = p.date || new Date().toISOString().slice(0, 10);
+  document.getElementById('editBkBarcode').value = p.barcodeNo || p.labId || '';
   document.getElementById('editBkDiscount').value = Number(p.discount || 0);
   document.getElementById('editBkPaid').value = Number(p.paid || 0);
   document.getElementById('editBkRemarks').value = p.remarks || '';
+  document.getElementById('editTestSearch').value = '';
+
+  editSelectedTestIds = (p.items || []).map(it => {
+    if (it.testId && state.tests.some(t => t.id === it.testId)) return it.testId;
+    const byCode = state.tests.find(t => (t.code || '').toUpperCase() === (it.code || '').toUpperCase());
+    if (byCode) return byCode.id;
+    const byName = state.tests.find(t => t.name === it.name);
+    return byName ? byName.id : null;
+  }).filter(Boolean);
+
+  renderEditBookingTests();
   recalcEditBilling();
   document.getElementById('modalEditBooking').classList.add('open');
 }
 
+function renderEditBookingTests() {
+  const cntEl = document.getElementById('editSelTestCount');
+  if (cntEl) cntEl.textContent = editSelectedTestIds.length;
+
+  const tagsBox = document.getElementById('editSelectedTestTags');
+  if (tagsBox) {
+    tagsBox.innerHTML = editSelectedTestIds.map(id => {
+      const t = state.tests.find(x => x.id === id);
+      if (!t) return '';
+      return `<span class="tube-pill" style="margin:0;">[${t.code || t.id.toUpperCase()}] ${t.name} <button type="button" class="btn btn-danger btn-sm" style="padding:1px 6px;" onclick="removeEditBookingTest('${t.id}')">×</button></span>`;
+    }).join('') || '<small style="color:#64748b;">Koi test select nahi hai.</small>';
+  }
+
+  const q = (document.getElementById('editTestSearch')?.value || '').toLowerCase();
+  const grid = document.getElementById('editBookingTestGrid');
+  if (grid) {
+    grid.innerHTML = state.tests
+      .filter(t => t.name.toLowerCase().includes(q) || t.dept.toLowerCase().includes(q) || (t.code || '').toLowerCase().includes(q))
+      .map(t => {
+        const sel = editSelectedTestIds.includes(t.id);
+        return `<div class="test-chip ${sel ? 'selected' : ''}" onclick="toggleEditBookingTest('${t.id}')">
+          <div><div><strong style="color:var(--primary);">[${t.code || t.id.toUpperCase()}]</strong> ${t.name}</div><small style="color:#64748b;">${t.dept}</small></div>
+          <strong>₹${t.rate}</strong>
+        </div>`;
+      }).join('');
+  }
+  recalcEditBilling();
+}
+
+function toggleEditBookingTest(id) {
+  const t = state.tests.find(x => x.id === id);
+  if (!t) return;
+  const panelIds = AUTO_PANEL_GROUPS[t.dept];
+  if (editSelectedTestIds.includes(id)) {
+    editSelectedTestIds = editSelectedTestIds.filter(x => x !== id);
+  } else if (panelIds && panelIds.includes(id)) {
+    panelIds.forEach(pid => {
+      if (state.tests.some(st => st.id === pid) && !editSelectedTestIds.includes(pid)) {
+        editSelectedTestIds.push(pid);
+      }
+    });
+  } else {
+    editSelectedTestIds.push(id);
+  }
+  renderEditBookingTests();
+}
+
+function removeEditBookingTest(id) {
+  editSelectedTestIds = editSelectedTestIds.filter(x => x !== id);
+  renderEditBookingTests();
+}
+
 function recalcEditBilling() {
-  const pid = document.getElementById('editBkId').value;
-  const p = state.patients.find(x => x.id === pid);
-  const total = p ? Number(p.total || p.net || 0) : 0;
+  let sum = 0;
+  editSelectedTestIds.forEach(id => {
+    const t = state.tests.find(x => x.id === id);
+    if (t) sum += Number(t.rate || 0);
+  });
+  const totalInp = document.getElementById('editBkTotal');
+  if (totalInp) totalInp.value = sum;
   const disc = Number(document.getElementById('editBkDiscount').value || 0);
   const paid = Number(document.getElementById('editBkPaid').value || 0);
-  const net = Math.max(0, total - disc);
+  const net = Math.max(0, sum - disc);
   const due = Math.max(0, net - paid);
   document.getElementById('editBkNet').value = net;
   document.getElementById('editBkDue').value = due;
@@ -2708,6 +2899,8 @@ function saveEditedBooking() {
   const name = document.getElementById('editBkName').value.trim();
   const age = document.getElementById('editBkAge').value.trim();
   if (!name || !age) return alert('Patient Name aur Age zaroori hai.');
+  if (!editSelectedTestIds.length) return alert('Kam se kam 1 test select karein.');
+
   p.name = name;
   p.age = age;
   p.gender = document.getElementById('editBkGender').value;
@@ -2717,10 +2910,37 @@ function saveEditedBooking() {
     p.centreCode = (document.getElementById('editBkCentre').value.trim() || 'MAIN').toUpperCase();
   }
   p.date = document.getElementById('editBkDate').value || p.date;
+  p.barcodeNo = (document.getElementById('editBkBarcode').value || '').trim() || p.labId;
+
+  const existingByTestId = new Map((p.items || []).map(it => [it.testId, it]));
+  p.items = editSelectedTestIds.map(tid => {
+    const t = state.tests.find(x => x.id === tid);
+    const prev = existingByTestId.get(tid);
+    return {
+      testId: t.id,
+      code: t.code || t.id.toUpperCase(),
+      name: t.name,
+      dept: t.dept,
+      unit: t.unit,
+      ref: getRefForGender(t, p.gender),
+      femaleRef: t.femaleRef || '',
+      min: t.min,
+      max: t.max,
+      value: prev ? prev.value : '',
+      flag: prev ? prev.flag : '',
+      sampleStatus: p.sampleIssue || 'OK'
+    };
+  });
+
+  let sum = 0;
+  editSelectedTestIds.forEach(tid => {
+    const t = state.tests.find(x => x.id === tid);
+    if (t) sum += Number(t.rate || 0);
+  });
+  p.total = sum;
   p.discount = Number(document.getElementById('editBkDiscount').value || 0);
   p.paid = Number(document.getElementById('editBkPaid').value || 0);
-  const baseTotal = Number(p.total || p.net || 0);
-  p.net = Math.max(0, baseTotal - p.discount);
+  p.net = Math.max(0, p.total - p.discount);
   p.due = Math.max(0, p.net - p.paid);
   p.remarks = document.getElementById('editBkRemarks').value.trim();
   p.updatedAt = new Date().toISOString();
@@ -2821,8 +3041,13 @@ function renderReportPreview(pid) {
         <tbody>`;
     groups[dept].forEach(it => {
       const fl = (it.flag || '').toUpperCase();
-      const valStyle = fl === 'H' ? 'color:#dc2626;font-weight:800;' : (fl === 'L' ? 'color:#d97706;font-weight:800;' : 'font-weight:700;');
-      const badge = fl === 'H' ? ' <span class="badge bg-high">HIGH</span>' : (fl === 'L' ? ' <span class="badge bg-low">LOW</span>' : '');
+      const isCrit = fl === 'CH' || fl === 'CL';
+      const isHigh = fl === 'H' || fl === 'CH';
+      const valStyle = isCrit ? 'color:#7f1d1d;font-weight:900;' : (isHigh ? 'color:#dc2626;font-weight:800;' : (fl === 'L' ? 'color:#d97706;font-weight:800;' : 'font-weight:700;'));
+      const badge = fl === 'CH' ? ' <span class="badge bg-high" style="background:#7f1d1d;color:#ffffff;">CRITICAL HIGH</span>'
+        : (fl === 'CL' ? ' <span class="badge bg-high" style="background:#991b1b;color:#ffffff;">CRITICAL LOW</span>'
+        : (fl === 'H' ? ' <span class="badge bg-high">HIGH</span>'
+        : (fl === 'L' ? ' <span class="badge bg-low">LOW</span>' : '')));
       const refDisp = getRefForGender(it, p.gender);
       const codePrefix = it.code ? `<span style="color:${pCol};font-weight:800;">[${it.code}]</span> ` : '';
       html += `<tr><td>${codePrefix}<strong>${it.name}</strong></td><td style="${valStyle}">${it.value || 'Pending'}${badge}</td><td>${it.unit || ''}</td><td>${refDisp}</td></tr>`;
@@ -2852,6 +3077,98 @@ function renderReportPreview(pid) {
 }
 
 function downloadReportPdf() { window.print(); }
+
+
+function computeFlagForItem(it, num) {
+  if (isNaN(num)) return '';
+  const minVal = (it.min !== null && it.min !== '') ? Number(it.min) : null;
+  const maxVal = (it.max !== null && it.max !== '') ? Number(it.max) : null;
+  if (maxVal !== null && num > maxVal) {
+    return (num >= maxVal * 1.5) ? 'CH' : 'H';
+  }
+  if (minVal !== null && num < minVal) {
+    return (minVal > 0 && num <= minVal * 0.5) ? 'CL' : 'L';
+  }
+  return '';
+}
+
+function renderFlagBadge(flag) {
+  const f = (flag || '').toUpperCase();
+  if (f === 'CH') return '<span class="badge bg-high" style="background:#7f1d1d;color:#ffffff;">CRITICAL HIGH</span>';
+  if (f === 'CL') return '<span class="badge bg-high" style="background:#991b1b;color:#ffffff;">CRITICAL LOW</span>';
+  if (f === 'H') return '<span class="badge bg-high">HIGH</span>';
+  if (f === 'L') return '<span class="badge bg-low">LOW</span>';
+  return 'Normal';
+}
+
+function reprintBarcodeById(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  if (!p) return;
+  const code = p.barcodeNo || p.labId || 'SPL000';
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = 200;
+  tmpCanvas.height = 46;
+  drawBarcodeVisual(tmpCanvas, code);
+  const win = window.open('', '_blank', 'width=360,height=250');
+  if (!win) return;
+  win.document.write(`
+    <html><body style="font-family:sans-serif;text-align:center;padding:14px;">
+      <div style="font-size:12px;font-weight:700;">${state.settings.labName || 'SMART PATHOLOGY LAB'}</div>
+      <div style="font-size:11px;margin:2px 0;">${p.name} (${p.labId})</div>
+      <img src="${tmpCanvas.toDataURL()}" style="height:54px;" />
+      <div style="font-family:monospace;font-size:13px;font-weight:800;margin-top:4px;">${code}</div>
+      <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);};<\/script>
+    </body></html>
+  `);
+  win.document.close();
+}
+
+function openBillReceiptModal(pid) {
+  const targetId = pid || activeReportPatientId;
+  const p = state.patients.find(x => x.id === targetId) || state.patients[state.patients.length - 1];
+  if (!p) return alert('Koi booking nahi mili.');
+  activeReportPatientId = p.id;
+  const rows = (p.items || []).map(it =>
+    `<tr><td>${it.code ? `[${it.code}] ` : ''}${it.name}</td><td style="text-align:right;">₹${Number((state.tests.find(t=>t.id===it.testId)?.rate) || 0)}</td></tr>`
+  ).join('');
+  document.getElementById('billReceiptContent').innerHTML = `
+    <div style="text-align:center;border-bottom:2px solid #cbd5e1;padding-bottom:8px;margin-bottom:10px;">
+      <div style="font-size:16px;font-weight:800;color:var(--primary);">${state.settings.labName || 'SMART PATHOLOGY LAB'}</div>
+      <div style="font-size:11px;color:#64748b;">${state.settings.labAddr || ''} ${state.settings.labPhone ? '• Mob.: ' + state.settings.labPhone : ''}</div>
+      <div style="font-size:12px;font-weight:700;margin-top:4px;">PAYMENT RECEIPT / INVOICE</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;">
+      <div><strong>Patient:</strong> ${p.name} (${p.age}/${p.gender})</div>
+      <div><strong>Lab ID:</strong> ${p.labId}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;">
+      <div><strong>Date:</strong> ${p.date} • <strong>Centre:</strong> ${p.centreCode || 'MAIN'}</div>
+      <div><strong>Barcode:</strong> <code>${p.barcodeNo || p.labId}</code></div>
+    </div>
+    <table style="margin-bottom:10px;">
+      <thead><tr><th>Tests Included</th><th style="text-align:right;">Rate</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="background:#f8fafc;padding:8px 10px;border-radius:6px;font-size:12px;line-height:1.6;">
+      <div><strong>Total:</strong> ₹${Number(p.total || p.net || 0)} &nbsp;|&nbsp; <strong>Discount:</strong> ₹${Number(p.discount || 0)} &nbsp;|&nbsp; <strong>Net Payable:</strong> ₹${Number(p.net || 0)}</div>
+      <div><strong>Paid:</strong> ₹${Number(p.paid || 0)} (${p.payMode || 'Cash'}) &nbsp;|&nbsp; <strong style="color:${Number(p.due||0)>0?'#dc2626':'#15803d'};">Balance Due: ₹${Number(p.due || 0)}</strong></div>
+    </div>
+  `;
+  document.getElementById('modalBillReceipt').classList.add('open');
+}
+
+function printBillReceiptSlip() {
+  const box = document.getElementById('billReceiptContent');
+  if (!box) return;
+  const win = window.open('', '_blank', 'width=480,height=640');
+  if (!win) return;
+  win.document.write(`
+    <html><head><title>Receipt</title>
+    <style>body{font-family:sans-serif;padding:16px;color:#0f172a;}table{width:100%;border-collapse:collapse;}th,td{padding:6px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:12px;}</style>
+    </head><body>${box.innerHTML}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);};<\/script></body></html>
+  `);
+  win.document.close();
+}
 
 function openBillReceipt() {
   const p = state.patients.find(x => x.id === activeReportPatientId);
@@ -3168,6 +3485,9 @@ function refreshAllUI() {
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
   document.getElementById('bkDate').value = new Date().toISOString().slice(0, 10);
+  generateNewBookingBarcode();
+  const bkBcInp = document.getElementById('bkBarcode');
+  if (bkBcInp) bkBcInp.addEventListener('input', () => drawBarcodeVisual(document.getElementById('bkBarcodeCanvas'), bkBcInp.value));
   refreshAllUI();
   handleUrlCentreLogin();
   if (state.settings.cloudUrl) {
