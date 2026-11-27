@@ -282,10 +282,29 @@
     .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; }
 
     .cc-lock-overlay {
-      position: fixed; inset: 0; background: rgba(15,23,42,.78);
+      position: fixed; inset: 0; background: #0f172a;
       display: none; align-items: center; justify-content: center; z-index: 1200; padding: 16px;
     }
     .cc-lock-overlay.open { display: flex; }
+    body.cc-locked #mainAppContainer,
+    body.cc-locked #mainTabsNav,
+    body.cc-locked #btnCloudRole,
+    body.cc-locked #btnBranding,
+    body.cc-locked #btnSignatures,
+    body.cc-locked #btnBackup {
+      display: none !important;
+    }
+    body.cc-is-pcc #btnCloudRole,
+    body.cc-is-pcc #btnBranding,
+    body.cc-is-pcc #btnSignatures,
+    body.cc-is-pcc #btnBackup,
+    body.cc-is-pcc #btnExportCsv,
+    body.cc-is-pcc #wlCentreFilterWrap,
+    body.cc-is-pcc [data-tab="tabMaster"],
+    body.cc-is-pcc [data-tab="tabProfiles"],
+    body.cc-is-pcc [data-tab="tabResult"] {
+      display: none !important;
+    }
 
     .code-box {
       background: #0f172a; color: #e2e8f0; padding: 10px; border-radius: 8px;
@@ -774,11 +793,15 @@
 <div id="ccLockOverlay" class="cc-lock-overlay">
   <div class="modal-card" style="max-width:440px;text-align:center;">
     <h3 style="color:var(--primary);margin-bottom:8px;">Collection Centre Access Locked</h3>
-    <p id="ccLockDesc" style="font-size:13px;color:#475569;margin-bottom:14px;">
+    <p id="ccLockDesc" style="font-size:13px;color:#475569;margin-bottom:12px;">
       Is Collection Centre ka Access Code dalein.
     </p>
+    <div style="margin-bottom:12px;text-align:left;">
+      <label style="text-align:center;">Access Code</label>
+      <input type="text" id="ccUnlockCodeInput" placeholder="4-digit Access Code dalein" style="text-align:center;font-size:16px;font-weight:700;letter-spacing:2px;" onkeydown="if(event.key==='Enter') retryCentreCodePrompt()" />
+    </div>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="retryCentreCodePrompt()">Enter Access Code</button>
+      <button class="btn btn-primary" onclick="retryCentreCodePrompt()">Unlock Centre</button>
       <button class="btn btn-white" onclick="exitCollectionCentreToAdmin()">Admin Login (PIN)</button>
     </div>
   </div>
@@ -1581,6 +1604,12 @@ function onBookingCentreSelect(val) {
 
 function applyRoleRestrictions() {
   const pcc = isPccRole();
+  if (pcc) {
+    document.body.classList.add('cc-is-pcc');
+    document.body.classList.remove('cc-locked');
+  } else {
+    document.body.classList.remove('cc-is-pcc');
+  }
   const hideInPcc = ['tabMaster', 'tabProfiles', 'tabResult'];
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const t = btn.getAttribute('data-tab');
@@ -1835,33 +1864,36 @@ function handleUrlCentreLogin() {
     return;
   }
 
-  const entered = prompt(`Collection Centre (${centreName} - ${ccParam}) Access Code dalein:`);
-  if (entered !== null && entered.trim() === String(expectedPin).trim()) {
-    state.settings.role = 'PCC';
-    state.settings.centreCode = ccParam;
-    saveState();
-    document.getElementById('ccLockOverlay').classList.remove('open');
-    if (state.settings.cloudUrl) syncCloudNow();
-  } else {
-    pendingCentreUnlock = { ccParam, expectedPin, centreName };
-    document.getElementById('ccLockDesc').textContent = `Centre ${centreName} (${ccParam}) locked hai. Sahi Access Code dalein.`;
-    document.getElementById('ccLockOverlay').classList.add('open');
-  }
+  pendingCentreUnlock = { ccParam, expectedPin, centreName };
+  document.body.classList.add('cc-locked');
+  document.getElementById('ccLockDesc').textContent = `Centre ${centreName} (${ccParam}) ke liye Access Code dalein.`;
+  const inpEl = document.getElementById('ccUnlockCodeInput');
+  if (inpEl) inpEl.value = '';
+  document.getElementById('ccLockOverlay').classList.add('open');
 }
 
 function retryCentreCodePrompt() {
   if (!pendingCentreUnlock) return;
   const { ccParam, expectedPin, centreName } = pendingCentreUnlock;
-  const entered = prompt(`Collection Centre (${centreName} - ${ccParam}) Access Code dalein:`);
-  if (entered !== null && entered.trim() === String(expectedPin).trim()) {
+  const inpEl = document.getElementById('ccUnlockCodeInput');
+  let entered = inpEl ? inpEl.value.trim() : '';
+  if (!entered) {
+    const pVal = prompt(`Collection Centre (${centreName} - ${ccParam}) Access Code dalein:`);
+    if (pVal === null) return;
+    entered = pVal.trim();
+  }
+  if (entered && String(entered) === String(expectedPin).trim()) {
     state.settings.role = 'PCC';
     state.settings.centreCode = ccParam;
     pendingCentreUnlock = null;
-    document.getElementById('ccLockOverlay').classList.remove('open');
+    document.body.classList.remove('cc-locked');
+    document.body.classList.remove('cc-locked');
+  document.getElementById('ccLockOverlay').classList.remove('open');
     saveState();
     if (state.settings.cloudUrl) syncCloudNow();
   } else {
     alert('Galat Access Code!');
+    if (inpEl) inpEl.focus();
   }
 }
 
