@@ -1482,7 +1482,11 @@ function restoreDefaultCatalog() {
 
 function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = '';
+    try { raw = localStorage.getItem(STORAGE_KEY) || ''; } catch (e) {}
+    if (!raw && window.name && window.name.startsWith('SPL_STATE_BACKUP:')) {
+      raw = window.name.slice('SPL_STATE_BACKUP:'.length);
+    }
     if (raw) {
       const parsed = JSON.parse(raw);
       state.settings = Object.assign({}, state.settings, parsed.settings || {});
@@ -1519,8 +1523,31 @@ function broadcastLocalStateUpdate() {
     if (SPL_LIVE_CHANNEL) {
       SPL_LIVE_CHANNEL.postMessage({ type: 'STATE_UPDATED', at: Date.now() });
     }
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'SPL_STATE_SYNC', at: Date.now() }, '*');
+    }
   } catch (e) {}
 }
+
+window.addEventListener('message', (ev) => {
+  if (ev && ev.data && ev.data.type === 'SPL_STATE_SYNC') {
+    loadState();
+    refreshAllUI();
+  }
+});
+
+setInterval(() => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.patients) && parsed.patients.length !== state.patients.length) {
+      loadState();
+      refreshAllUI();
+    }
+  } catch (e) {}
+}, 1500);
+
 
 if (SPL_LIVE_CHANNEL) {
   SPL_LIVE_CHANNEL.onmessage = (ev) => {
@@ -1545,7 +1572,9 @@ window.addEventListener('storage', (ev) => {
 });
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const serialized = JSON.stringify(state);
+  try { localStorage.setItem(STORAGE_KEY, serialized); } catch (e) {}
+  try { window.name = 'SPL_STATE_BACKUP:' + serialized; } catch (e) {}
   broadcastLocalStateUpdate();
   refreshAllUI();
 }
@@ -1959,6 +1988,14 @@ function handleUrlCentreLogin() {
   if (tokenObj && tokenObj.cloudUrl) {
     state.settings.cloudUrl = tokenObj.cloudUrl;
     state.settings.cloudKey = tokenObj.cloudKey || 'SPL_SYNC_2026';
+  }
+  if (tokenObj && ccParam && tokenObj.pin) {
+    const exists = state.centres.some(c => c.code.toUpperCase() === ccParam);
+    if (!exists) {
+      state.centres.push({ name: tokenObj.name || ccParam, code: ccParam, pin: String(tokenObj.pin) });
+    }
+  }
+  if (tokenObj) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
@@ -2242,14 +2279,9 @@ async function saveBooking() {
   resetBookingForm();
 
   if (state.settings.cloudUrl) {
-    const synced = await pushRecordToCloud(rec);
-    setTimeout(() => { syncCloudNow(true); }, 2600);
-    alert(synced
-      ? `Booking Saved & Sent to Cloud! Lab ID: ${labId}`
-      : `Booking Saved Locally (Lab ID: ${labId}). Cloud Sync check karein.`);
-  } else {
-    alert(`Booking Saved! Lab ID: ${labId}\n(Note: Alag phone/PC se Main Lab mein bhejne ke liye Google Cloud Sync URL set karein.)`);
+    pushRecordToCloud(rec).then(() => { setTimeout(() => { syncCloudNow(true); }, 2500); });
   }
+  alert(`Booking Saved! Lab ID: ${labId}`);
 }
 
 function renderPendingQueue() {
