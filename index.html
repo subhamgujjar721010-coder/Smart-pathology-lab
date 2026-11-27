@@ -1509,8 +1509,42 @@ function loadState() {
   } catch (e) { console.error(e); }
 }
 
+
+const SPL_LIVE_CHANNEL = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('SPL_LIVE_SYNC_CHANNEL') : null;
+
+function broadcastLocalStateUpdate() {
+  try {
+    if (SPL_LIVE_CHANNEL) {
+      SPL_LIVE_CHANNEL.postMessage({ type: 'STATE_UPDATED', at: Date.now() });
+    }
+  } catch (e) {}
+}
+
+if (SPL_LIVE_CHANNEL) {
+  SPL_LIVE_CHANNEL.onmessage = (ev) => {
+    if (ev && ev.data && ev.data.type === 'STATE_UPDATED') {
+      loadState();
+      refreshAllUI();
+      if (document.getElementById('tabPreview') && document.getElementById('tabPreview').classList.contains('active')) {
+        renderReportPreview(activeReportPatientId);
+      }
+    }
+  };
+}
+
+window.addEventListener('storage', (ev) => {
+  if (ev && ev.key === STORAGE_KEY && ev.newValue) {
+    loadState();
+    refreshAllUI();
+    if (document.getElementById('tabPreview') && document.getElementById('tabPreview').classList.contains('active')) {
+      renderReportPreview(activeReportPatientId);
+    }
+  }
+});
+
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  broadcastLocalStateUpdate();
   refreshAllUI();
 }
 
