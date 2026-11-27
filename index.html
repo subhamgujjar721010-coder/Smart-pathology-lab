@@ -897,6 +897,49 @@ function doPost(e) {
   </div>
 </div>
 
+
+<!-- MODAL: EDIT BOOKING -->
+<div id="modalEditBooking" class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Edit Booking</h3>
+      <button class="btn btn-white btn-sm" onclick="closeModal('modalEditBooking')">Close</button>
+    </div>
+    <input type="hidden" id="editBkId" />
+    <div class="form-row">
+      <div><label>Patient Name *</label><input type="text" id="editBkName" /></div>
+      <div><label>Age *</label><input type="text" id="editBkAge" /></div>
+      <div>
+        <label>Gender</label>
+        <select id="editBkGender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div><label>Mobile</label><input type="text" id="editBkMobile" /></div>
+    </div>
+    <div class="form-row">
+      <div><label>Referred By</label><input type="text" id="editBkRef" /></div>
+      <div><label>Collection Centre</label><input type="text" id="editBkCentre" /></div>
+      <div><label>Date</label><input type="date" id="editBkDate" /></div>
+    </div>
+    <div class="form-row">
+      <div><label>Discount (₹)</label><input type="number" id="editBkDiscount" oninput="recalcEditBilling()" /></div>
+      <div><label>Paid (₹)</label><input type="number" id="editBkPaid" oninput="recalcEditBilling()" /></div>
+      <div><label>Net (₹)</label><input type="number" id="editBkNet" readonly /></div>
+      <div><label>Due (₹)</label><input type="number" id="editBkDue" readonly /></div>
+    </div>
+    <div class="form-row">
+      <div><label>Remarks</label><input type="text" id="editBkRemarks" /></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+      <button class="btn btn-white" onclick="closeModal('modalEditBooking')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditedBooking()">Update Booking</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: BACKUP / RESTORE -->
 <div id="modalBackup" class="modal-backdrop">
   <div class="modal-card">
@@ -2301,8 +2344,10 @@ function renderPendingQueue() {
         <td>${p.items.map(i => `${i.code ? `[${i.code}] ` : ''}${i.name}`).join(', ')}</td>
         <td>${issueBadge}<small style="color:#334155;">${p.remarks || '-'}</small></td>
         <td><span class="badge ${p.status === 'Ready' ? 'bg-ready' : 'bg-pending'}">${p.status}</span></td>
-        <td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap;">
           ${!isPccRole() ? `<button class="btn btn-primary btn-sm" onclick="jumpToResult('${p.id}')">Enter Result</button>` : ''}
+          <button class="btn btn-warn btn-sm" onclick="openEditBookingModal('${p.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteBookingRecord('${p.id}')">Delete</button>
           <button class="btn btn-white btn-sm" onclick="jumpToPreview('${p.id}')">Preview</button>
         </td>
       </tr>
@@ -2605,13 +2650,82 @@ function renderWorkload() {
       <td>₹${p.paid}</td>
       <td style="color:${p.due > 0 ? '#dc2626' : '#15803d'};font-weight:700;">₹${p.due}</td>
       <td><span class="badge ${p.status === 'Verified' ? 'bg-verified' : 'bg-pending'}">${p.status}</span></td>
-      <td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="jumpToPreview('${p.id}')">Report</button>
+        <button class="btn btn-warn btn-sm" onclick="openEditBookingModal('${p.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBookingRecord('${p.id}')">Delete</button>
         ${!isPccRole() && Number(p.due || 0) > 0 ? `<button class="btn btn-success btn-sm" onclick="markDuePaid('${p.id}')">Pay Due</button>` : ''}
-        ${!isPccRole() ? `<button class="btn btn-danger btn-sm" onclick="deletePatient('${p.id}')">Del</button>` : ''}
       </td>
     </tr>
   `).join('') || '<tr><td colspan="10" style="text-align:center;color:#64748b;">No records found.</td></tr>';
+}
+
+
+function deleteBookingRecord(pid) {
+  if (!confirm('Is booking ko delete karna hai?')) return;
+  state.patients = state.patients.filter(p => p.id !== pid);
+  if (activeReportPatientId === pid) {
+    activeReportPatientId = state.patients.length ? state.patients[state.patients.length - 1].id : '';
+  }
+  saveState();
+}
+
+function openEditBookingModal(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  if (!p) return;
+  document.getElementById('editBkId').value = p.id;
+  document.getElementById('editBkName').value = p.name || '';
+  document.getElementById('editBkAge').value = p.age || '';
+  document.getElementById('editBkGender').value = p.gender || 'Male';
+  document.getElementById('editBkMobile').value = p.mobile || '';
+  document.getElementById('editBkRef').value = p.refBy || 'Self';
+  document.getElementById('editBkCentre').value = p.centreCode || 'MAIN';
+  document.getElementById('editBkCentre').disabled = isPccRole();
+  document.getElementById('editBkDate').value = p.date || new Date().toISOString().slice(0, 10);
+  document.getElementById('editBkDiscount').value = Number(p.discount || 0);
+  document.getElementById('editBkPaid').value = Number(p.paid || 0);
+  document.getElementById('editBkRemarks').value = p.remarks || '';
+  recalcEditBilling();
+  document.getElementById('modalEditBooking').classList.add('open');
+}
+
+function recalcEditBilling() {
+  const pid = document.getElementById('editBkId').value;
+  const p = state.patients.find(x => x.id === pid);
+  const total = p ? Number(p.total || p.net || 0) : 0;
+  const disc = Number(document.getElementById('editBkDiscount').value || 0);
+  const paid = Number(document.getElementById('editBkPaid').value || 0);
+  const net = Math.max(0, total - disc);
+  const due = Math.max(0, net - paid);
+  document.getElementById('editBkNet').value = net;
+  document.getElementById('editBkDue').value = due;
+}
+
+function saveEditedBooking() {
+  const pid = document.getElementById('editBkId').value;
+  const p = state.patients.find(x => x.id === pid);
+  if (!p) return;
+  const name = document.getElementById('editBkName').value.trim();
+  const age = document.getElementById('editBkAge').value.trim();
+  if (!name || !age) return alert('Patient Name aur Age zaroori hai.');
+  p.name = name;
+  p.age = age;
+  p.gender = document.getElementById('editBkGender').value;
+  p.mobile = document.getElementById('editBkMobile').value.trim();
+  p.refBy = document.getElementById('editBkRef').value.trim() || 'Self';
+  if (!isPccRole()) {
+    p.centreCode = (document.getElementById('editBkCentre').value.trim() || 'MAIN').toUpperCase();
+  }
+  p.date = document.getElementById('editBkDate').value || p.date;
+  p.discount = Number(document.getElementById('editBkDiscount').value || 0);
+  p.paid = Number(document.getElementById('editBkPaid').value || 0);
+  const baseTotal = Number(p.total || p.net || 0);
+  p.net = Math.max(0, baseTotal - p.discount);
+  p.due = Math.max(0, p.net - p.paid);
+  p.remarks = document.getElementById('editBkRemarks').value.trim();
+  p.updatedAt = new Date().toISOString();
+  saveState();
+  closeModal('modalEditBooking');
 }
 
 function deletePatient(pid) {
