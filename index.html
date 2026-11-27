@@ -1919,10 +1919,6 @@ function buildCentreLink(c) {
 function copyCentreLink(code) {
   const c = state.centres.find(x => x.code === code);
   if (!c) return;
-  if (!state.settings.cloudUrl) {
-    alert('Pehle neeche Google Apps Script Web App URL daal kar Save Settings karein! Tabhi centre ki entry Main Lab software mein aayegi.');
-    return;
-  }
   const url = buildCentreLink(c);
   const txt = `Collection Centre: ${c.name} (${c.code})\nAccess Code: ${c.pin}\nLink: ${url}`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
