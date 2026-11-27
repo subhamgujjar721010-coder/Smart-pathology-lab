@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light only" />
-  <title>SMART PATHOLOGY LAB — Complete Lab Management & Online Reporting v3.4</title>
+  <meta name="theme-color" content="#151e73" />
+  <title>SMART PATHOLOGY LAB — Complete Lab Management & Online Reporting v3.5</title>
+  <link rel="manifest" id="pwaManifestLink" />
   <style>
     :root {
       color-scheme: light only;
@@ -142,7 +144,7 @@
     .kpi-box small { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; }
     .kpi-box div { font-size: 21px; font-weight: 800; color: var(--primary); margin-top: 4px; }
 
-    /* A4 Report Preview — strictly light colors so mobile dark mode never turns report black */
+    /* A4 Report Preview */
     .a4-wrapper { background: #cbd5e1; padding: 18px; border-radius: 10px; overflow-x: auto; }
     .a4-sheet {
       width: 794px; min-height: 1060px; margin: 0 auto; background: #ffffff !important; color: #0f172a !important;
@@ -156,7 +158,7 @@
     }
     .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 1060px; background: transparent; }
 
-    /* Software-Style Letterhead Banner (matches app header) */
+    /* Software-Style Letterhead Banner */
     .rep-banner {
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: #ffffff !important; padding: 18px 26px; display: flex; justify-content: space-between; align-items: center; gap: 14px;
@@ -255,7 +257,7 @@
     <div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <h1 id="hdrLabName">SMART PATHOLOGY LAB</h1>
-        <span class="pill ver-pill">v3.4</span>
+        <span class="pill ver-pill">v3.5</span>
         <span class="pill role-pill" id="roleBadge">ADMIN LAB</span>
         <span class="pill centre-pill" id="centreBadge">MAIN</span>
       </div>
@@ -265,7 +267,8 @@
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn btn-light btn-sm" id="btnSyncTop" onclick="syncCloudNow()">Sync Data</button>
+    <button class="btn btn-warn btn-sm" id="btnInstallApp" onclick="triggerInstallApp()" title="Computer / Mobile par App ki tarah install karein">Install App (PC/Phone)</button>
+    <button class="btn btn-light btn-sm" id="btnSyncTop" onclick="syncCloudNow(false)">Sync Data</button>
     <button class="btn btn-light btn-sm" id="btnExitCcMode" style="display:none;" onclick="exitCollectionCentreToAdmin()">Switch to Admin (PIN)</button>
     <button class="btn btn-light btn-sm" id="btnCloudRole" onclick="openModal('modalCloud')">Collection Centres &amp; Cloud Sync <span style="background:#cbd5e1;color:#0f172a;padding:1px 6px;border-radius:999px;font-size:10px;" id="cloudStatusTag">Offline</span></button>
     <button class="btn btn-light btn-sm" id="btnBranding" onclick="openModal('modalBranding')">Branding, Letterhead &amp; Logo</button>
@@ -355,14 +358,19 @@
         </div>
 
         <div class="card">
-          <h2>Select Complete Profiles / Panels (CBC, LFT, KFT, Lipid, Thyroid, Fever)</h2>
+          <h2>Select Complete Profiles / Panels (1-Click Full Panel)</h2>
           <div id="profileButtons" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         </div>
 
         <div class="card">
           <h2>
-            <span>Select Individual Tests (Search by Code, Name or Dept)</span>
-            <input type="text" id="testSearch" placeholder="Code or test name..." style="width:220px;padding:5px 8px;font-size:12px;" oninput="renderBookingTests()" />
+            <span>Select Tests (Kisi bhi CBC/LFT/KFT/Lipid test par click karne par poora panel select hoga)</span>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <label style="display:inline-flex;align-items:center;gap:4px;margin:0;cursor:pointer;font-size:11.5px;color:#0f172a;">
+                <input type="checkbox" id="chkAutoFullPanel" checked style="width:auto;" /> Auto Full Panel
+              </label>
+              <input type="text" id="testSearch" placeholder="Code or test name..." style="width:200px;padding:5px 8px;font-size:12px;" oninput="renderBookingTests()" />
+            </div>
           </h2>
           <div id="bookingTestGrid" class="test-chip-grid"></div>
         </div>
@@ -370,12 +378,15 @@
 
       <div>
         <div class="card">
-          <h2>Selected Tests &amp; Automated Sample Tube Guide</h2>
+          <h2>
+            <span>Selected Parameters (<span id="selParamCount">0</span>) — Remove Any via (×)</span>
+            <button class="btn btn-white btn-sm" onclick="clearSelectedTestsOnly()">Clear Tests</button>
+          </h2>
           <div id="tubeGuideBox" style="margin-bottom:10px;padding:8px;background:#f8fafc;border-radius:8px;border:1px dashed #cbd5e1;">
-            <small style="color:#64748b;">Select tests or a complete panel (CBC, LFT, KFT, Lipid) to view required tubes.</small>
+            <small style="color:#64748b;">Select any test or panel to auto-load all parameters; remove unwanted ones with ×.</small>
           </div>
           <table>
-            <thead><tr><th>Code</th><th>Test Name</th><th>Dept</th><th>Rate (₹)</th><th></th></tr></thead>
+            <thead><tr><th>Code</th><th>Test Name</th><th>Dept</th><th>Rate (₹)</th><th>Remove</th></tr></thead>
             <tbody id="selectedTestsBody"></tbody>
           </table>
 
@@ -412,8 +423,8 @@
   <div id="tabPending" class="tab-pane">
     <div class="card">
       <h2>
-        <span>Pending Samples &amp; Report Queue</span>
-        <button class="btn btn-primary btn-sm" onclick="syncCloudNow()">Refresh / Sync Cloud</button>
+        <span>Pending Samples &amp; Report Queue (Main Lab + Collection Centres)</span>
+        <button class="btn btn-primary btn-sm" onclick="syncCloudNow(false)">Refresh / Sync Cloud</button>
       </h2>
       <table>
         <thead>
@@ -480,7 +491,7 @@
       </div>
 
       <div style="margin-bottom:10px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm" onclick="syncCloudNow()">Sync Cloud</button>
+        <button class="btn btn-primary btn-sm" onclick="syncCloudNow(false)">Sync Cloud</button>
         <button class="btn btn-success btn-sm" id="btnExportCsv" onclick="exportWorkloadCSV()">Export CSV / Excel</button>
       </div>
 
@@ -685,6 +696,34 @@
   </div>
 </div>
 
+<!-- MODAL: INSTALL AS COMPUTER / MOBILE SOFTWARE -->
+<div id="modalInstall" class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Computer / Mobile par Software ki tarah Install karein</h3>
+      <button class="btn btn-white btn-sm" onclick="closeModal('modalInstall')">Close</button>
+    </div>
+    <p style="font-size:13px;color:#334155;margin-bottom:12px;">
+      Is app ko aap apne Windows Computer (Chrome / Edge) ya Android Phone par ek independent desktop software / app ki tarah install kar sakte hain (bina address bar ke alag window aur Desktop icon ke saath):
+    </p>
+    <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;margin-bottom:12px;">
+      <strong style="color:var(--primary);">Windows PC (Google Chrome / Microsoft Edge):</strong>
+      <ol style="margin:6px 0 0 18px;font-size:13px;line-height:1.6;">
+        <li>Is GitHub link ko Chrome ya Edge browser mein kholein.</li>
+        <li>Upar address bar ke right side mein <strong>Install icon (Computer + Arrow)</strong> par click karein, ya browser ke <strong>3 dots (⋮) &rarr; Cast, save, and share &rarr; Install SMART PATHOLOGY LAB</strong> par click karein.</li>
+        <li><strong>Install</strong> dabate hi aapke Desktop aur Start Menu mein <strong>SMART PATHOLOGY LAB</strong> ka software icon ban jayega.</li>
+      </ol>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;">
+      <strong style="color:var(--secondary);">Android Phone (Chrome):</strong>
+      <ol style="margin:6px 0 0 18px;font-size:13px;line-height:1.6;">
+        <li>Chrome mein upar <strong>3 dots (⋮) &rarr; Add to Home screen / Install app</strong> par tap karein.</li>
+        <li>Phone ke Home Screen par direct app icon aa jayega.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: BRANDING, LETTERHEAD, COLOR & LOGO -->
 <div id="modalBranding" class="modal-backdrop">
   <div class="modal-card">
@@ -770,7 +809,10 @@
     </div>
 
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#1e3a8a;">
-      <strong>Important (Two-Device Sync):</strong> Agar Collection Centre alag phone/PC par khulega, toh pehle niche <strong>Google Apps Script Web App URL</strong> daal kar Save karein aur phir <strong>Copy Link</strong> dabayein. Us link mein Cloud URL apne aap jud kar centre device par chala jayega aur centre ki entry Main Lab software mein dikhne lagegi.
+      <strong>Step-by-Step Two-Device Sync (Centre &rarr; Main Lab):</strong><br />
+      1. Google Sheet banayein &rarr; <strong>Extensions &rarr; Apps Script</strong> kholein &rarr; niche diya code paste karein.<br />
+      2. <strong>Deploy &rarr; New deployment &rarr; Web app</strong> chunein, <em>Who has access</em> ko <strong>"Anyone"</strong> rakhein, aur Web App URL (<code>.../exec</code>) copy karke niche paste karke <strong>Save Settings</strong> dabayein.<br />
+      3. Uske baad Centre ka <strong>Copy Link</strong> bhejein — centre par jo bhi booking hogi wo turant Main Lab software mein aa jayegi.
     </div>
 
     <h4 style="font-size:13.5px;color:var(--primary);margin-bottom:8px;">Add / Manage Collection Centres</h4>
@@ -807,11 +849,11 @@
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-success" onclick="saveCloudSettings()">Save Settings</button>
-        <button class="btn btn-primary" onclick="syncCloudNow()">Sync Now</button>
+        <button class="btn btn-primary" onclick="syncCloudNow(false)">Sync Now</button>
       </div>
 
-      <details style="margin-top:12px;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;background:#f8fafc;">
-        <summary style="cursor:pointer;font-weight:700;font-size:12px;color:var(--primary);">Google Apps Script Code (Two-Device Cloud Sync — Copy &amp; Deploy as "Anyone")</summary>
+      <details style="margin-top:12px;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;background:#f8fafc;" open>
+        <summary style="cursor:pointer;font-weight:700;font-size:12px;color:var(--primary);">Google Apps Script Code (Supports GET + POST + JSONP — Copy &amp; Deploy as "Anyone")</summary>
         <div class="code-box">const SECRET_KEY = "SPL_SYNC_2026";
 function getSheet(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -819,24 +861,33 @@ function getSheet(name) {
   if (!sh) { sh = ss.insertSheet(name); sh.appendRow(["id", "updatedAt", "json"]); }
   return sh;
 }
+function upsertRecord(rec) {
+  const sh = getSheet("Patients");
+  const rows = sh.getDataRange().getValues();
+  const id = String(rec.id || rec.labId);
+  let idx = -1;
+  for (let i = 1; i < rows.length; i++) if (String(rows[i][0]) === id) { idx = i + 1; break; }
+  const vals = [id, rec.updatedAt || new Date().toISOString(), JSON.stringify(rec)];
+  if (idx > 0) sh.getRange(idx, 1, 1, 3).setValues([vals]); else sh.appendRow(vals);
+}
 function doGet(e) {
   if ((e.parameter.key || "") !== SECRET_KEY) return ContentService.createTextOutput('{"ok":false}').setMimeType(ContentService.MimeType.JSON);
+  if (e.parameter.save) {
+    try { upsertRecord(JSON.parse(e.parameter.save)); } catch (err) {}
+  }
   const rows = getSheet("Patients").getDataRange().getValues();
   const records = [];
   for (let i = 1; i < rows.length; i++) if (rows[i][2]) records.push(JSON.parse(rows[i][2]));
-  return ContentService.createTextOutput(JSON.stringify({ ok: true, records })).setMimeType(ContentService.MimeType.JSON);
+  const out = JSON.stringify({ ok: true, records });
+  if (e.parameter.callback) {
+    return ContentService.createTextOutput(e.parameter.callback + "(" + out + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
 }
 function doPost(e) {
   const body = JSON.parse(e.postData.contents || "{}");
   if (body.key !== SECRET_KEY) return ContentService.createTextOutput('{"ok":false}').setMimeType(ContentService.MimeType.JSON);
-  const sh = getSheet("Patients");
-  const rows = sh.getDataRange().getValues();
-  const rec = body.record;
-  const id = String(rec.id || rec.labId);
-  let idx = -1;
-  for (let i = 1; i < rows.length; i++) if (String(rows[i][0]) === id) { idx = i + 1; break; }
-  const vals = [id, new Date().toISOString(), JSON.stringify(rec)];
-  if (idx > 0) sh.getRange(idx, 1, 1, 3).setValues([vals]); else sh.appendRow(vals);
+  if (body.record) upsertRecord(body.record);
   return ContentService.createTextOutput('{"ok":true}').setMimeType(ContentService.MimeType.JSON);
 }</div>
       </details>
@@ -862,6 +913,41 @@ function doPost(e) {
 </div>
 
 <script>
+// Register dynamic PWA manifest so Chrome/Edge allows direct Desktop/App installation
+(function initPwaSupport() {
+  try {
+    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="36" fill="#151e73"/><text x="96" y="114" font-family="Arial,sans-serif" font-weight="900" font-size="68" fill="#ffffff" text-anchor="middle">SPL</text></svg>`;
+    const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+    const manifest = {
+      name: 'SMART PATHOLOGY LAB',
+      short_name: 'SmartLab',
+      start_url: window.location.href.split('?')[0],
+      display: 'standalone',
+      background_color: '#f1f5f9',
+      theme_color: '#151e73',
+      icons: [{ src: iconUrl, sizes: '192x192', type: 'image/svg+xml' }]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    const link = document.getElementById('pwaManifestLink');
+    if (link) link.href = URL.createObjectURL(blob);
+  } catch (e) {}
+})();
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+function triggerInstallApp() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(() => { deferredInstallPrompt = null; });
+  } else {
+    openModal('modalInstall');
+  }
+}
+
 const QR_ENGINE = (function() {
   const EXP = new Array(512), LOG = new Array(256);
   let x = 1;
@@ -1139,7 +1225,14 @@ const DEPT_COMMENT_OPTIONS = [
   'Sample repeat / re-collection advised before final interpretation.'
 ];
 
-// COMPLETE STANDARD PATHOLOGY CATALOG: CBC, LFT, KFT, LIPID, DIABETES, THYROID, SEROLOGY, CLINICAL PATHOLOGY
+// Panels whose parameters auto-populate together when any member test is clicked (while still allowing individual × removal)
+const AUTO_PANEL_GROUPS = {
+  'HAEMATOLOGY (CBC)': ['cbc_hb', 'cbc_rbc', 'cbc_pcv', 'cbc_mcv', 'cbc_mch', 'cbc_mchc', 'cbc_rdw', 'cbc_tlc', 'cbc_neut', 'cbc_lymph', 'cbc_mono', 'cbc_eos', 'cbc_baso', 'cbc_plt'],
+  'LIVER FUNCTION TEST (LFT)': ['lft_bilt', 'lft_bild', 'lft_bili', 'lft_sgot', 'lft_sgpt', 'lft_alp', 'lft_ggt', 'lft_tp', 'lft_alb', 'lft_glob', 'lft_ag'],
+  'KIDNEY FUNCTION TEST (KFT)': ['kft_urea', 'kft_bun', 'kft_creat', 'kft_uric', 'kft_na', 'kft_k', 'kft_cl', 'kft_cal', 'kft_phos'],
+  'LIPID PROFILE': ['lip_chol', 'lip_trig', 'lip_hdl', 'lip_ldl', 'lip_vldl', 'lip_nonhdl', 'lip_ratio']
+};
+
 const DEFAULT_TESTS = [
   // 1. HAEMATOLOGY (CBC — Complete 14 Parameters)
   { id: 'cbc_hb', code: 'HB', name: 'Hemoglobin (Hb)', dept: 'HAEMATOLOGY (CBC)', unit: 'g/dL', ref: '13.0 - 17.0', femaleRef: '12.0 - 15.0', min: 13.0, max: 17.0, rate: 100, tube: 'EDTA (Purple)' },
@@ -1412,7 +1505,6 @@ function loadState() {
         state.patients = parsed.patients.map(p => Object.assign({ sampleIssue: 'OK', remarks: '', deptComments: {} }, p));
       }
     }
-    // Automatically ensure all complete CBC, LFT, KFT & Lipid parameters exist
     mergeDefaultCatalogIntoState();
   } catch (e) { console.error(e); }
 }
@@ -1507,7 +1599,7 @@ function switchTab(tabId, btn) {
 }
 
 function openModal(id) {
-  if (isPccRole()) {
+  if (isPccRole() && id !== 'modalInstall') {
     const pin = prompt('Enter Admin PIN:');
     if (pin !== state.settings.adminPin) return alert('Invalid Admin PIN!');
   }
@@ -1794,7 +1886,8 @@ function copyCentreLink(code) {
   const c = state.centres.find(x => x.code === code);
   if (!c) return;
   if (!state.settings.cloudUrl) {
-    alert('Note: Abhi Google Apps Script Cloud URL set nahi hai. Doosre phone/PC se entry Main Lab mein lane ke liye neeche Google Apps Script Web App URL zaroor save karein.');
+    alert('Pehle neeche Google Apps Script Web App URL daal kar Save Settings karein! Tabhi centre ki entry Main Lab software mein aayegi.');
+    return;
   }
   const url = buildCentreLink(c);
   const txt = `Collection Centre: ${c.name} (${c.code})\nAccess Code: ${c.pin}\nLink: ${url}`;
@@ -1942,8 +2035,38 @@ function renderBookingTests() {
 }
 
 function toggleSelectTest(id) {
-  if (selectedTestIds.includes(id)) selectedTestIds = selectedTestIds.filter(x => x !== id);
-  else selectedTestIds.push(id);
+  const t = state.tests.find(x => x.id === id);
+  if (!t) return;
+  const autoFull = document.getElementById('chkAutoFullPanel') ? document.getElementById('chkAutoFullPanel').checked : true;
+  const panelIds = autoFull ? AUTO_PANEL_GROUPS[t.dept] : null;
+
+  if (selectedTestIds.includes(id)) {
+    selectedTestIds = selectedTestIds.filter(x => x !== id);
+  } else if (panelIds && panelIds.includes(id)) {
+    panelIds.forEach(pid => {
+      if (state.tests.some(st => st.id === pid) && !selectedTestIds.includes(pid)) {
+        selectedTestIds.push(pid);
+      }
+    });
+    const matchedProf = state.profiles.find(pr => pr.testIds.length === panelIds.length && panelIds.every(pid => pr.testIds.includes(pid)));
+    renderBookingTests();
+    renderSelectedSummary(matchedProf && selectedTestIds.length === panelIds.length ? matchedProf.rate : undefined);
+    return;
+  } else {
+    selectedTestIds.push(id);
+  }
+  renderBookingTests();
+  renderSelectedSummary();
+}
+
+function removeSingleSelectedTest(id) {
+  selectedTestIds = selectedTestIds.filter(x => x !== id);
+  renderBookingTests();
+  renderSelectedSummary();
+}
+
+function clearSelectedTestsOnly() {
+  selectedTestIds = [];
   renderBookingTests();
   renderSelectedSummary();
 }
@@ -1958,6 +2081,8 @@ function applyProfile(pid) {
 
 function renderSelectedSummary(overrideTotal) {
   const tbody = document.getElementById('selectedTestsBody');
+  const cntSpan = document.getElementById('selParamCount');
+  if (cntSpan) cntSpan.textContent = selectedTestIds.length;
   const tubes = new Set();
   let sum = 0;
   tbody.innerHTML = selectedTestIds.map(id => {
@@ -1970,7 +2095,7 @@ function renderSelectedSummary(overrideTotal) {
       <td>${t.name}</td>
       <td><small>${t.dept}</small></td>
       <td>₹${t.rate}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="toggleSelectTest('${t.id}')">×</button></td>
+      <td><button class="btn btn-danger btn-sm" title="Is parameter ko hatayein" onclick="removeSingleSelectedTest('${t.id}')">×</button></td>
     </tr>`;
   }).join('');
 
@@ -1983,7 +2108,7 @@ function renderSelectedSummary(overrideTotal) {
   };
   const tubeBox = document.getElementById('tubeGuideBox');
   if (tubes.size === 0) {
-    tubeBox.innerHTML = '<small style="color:#64748b;">Select tests or a complete panel (CBC, LFT, KFT, Lipid) to view required tubes.</small>';
+    tubeBox.innerHTML = '<small style="color:#64748b;">Select any test or panel to auto-load all parameters; remove unwanted ones with ×.</small>';
   } else {
     tubeBox.innerHTML = Array.from(tubes).map(tb =>
       `<span class="tube-pill"><span class="tube-dot" style="background:${tubeColors[tb] || '#0f172a'}"></span>${tb}</span>`
@@ -2269,7 +2394,6 @@ function autoCalculateDerivedPanels(p) {
     byCode[c] = { it, idx, val };
   });
 
-  // LFT auto-calculations: Indirect Bilirubin = Total - Direct; Globulin = Total Protein - Albumin; A:G = Albumin / Globulin
   if (byCode.BILT && !isNaN(byCode.BILT.val) && byCode.BILD && !isNaN(byCode.BILD.val) && byCode.BILI) {
     const inp = document.getElementById('resVal_' + byCode.BILI.idx);
     if (inp && !inp.value.trim()) inp.value = Math.max(0, byCode.BILT.val - byCode.BILD.val).toFixed(2);
@@ -2283,14 +2407,10 @@ function autoCalculateDerivedPanels(p) {
       if (inpAG && !inpAG.value.trim()) inpAG.value = (byCode.ALB.val / globVal).toFixed(2);
     }
   }
-
-  // KFT auto-calculation: BUN = Urea / 2.14
   if (byCode.UREA && !isNaN(byCode.UREA.val) && byCode.BUN) {
     const inpB = document.getElementById('resVal_' + byCode.BUN.idx);
     if (inpB && !inpB.value.trim()) inpB.value = (byCode.UREA.val / 2.14).toFixed(1);
   }
-
-  // Lipid auto-calculations: VLDL = Triglycerides / 5; LDL = Total Chol - HDL - VLDL; Non-HDL = Total Chol - HDL; Ratio = Total Chol / HDL
   if (byCode.CHOL && !isNaN(byCode.CHOL.val) && byCode.HDL && !isNaN(byCode.HDL.val)) {
     if (byCode.NHDL) {
       const inpN = document.getElementById('resVal_' + byCode.NHDL.idx);
@@ -2649,8 +2769,35 @@ function saveProfile() {
 }
 function deleteProfile(id) { if (!isPccRole()) { state.profiles = state.profiles.filter(p => p.id !== id); saveState(); } }
 
+function jsonpRequest(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'spl_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Cloud timeout'));
+    }, 12000);
+    window[cbName] = (data) => {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve(data);
+    };
+    script.onerror = () => {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Script load error'));
+    };
+    script.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'callback=' + cbName;
+    document.body.appendChild(script);
+  });
+}
+
 async function pushRecordToCloud(rec) {
   if (!state.settings.cloudUrl) return false;
+  const key = encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026');
   try {
     await fetch(state.settings.cloudUrl, {
       method: 'POST',
@@ -2658,6 +2805,11 @@ async function pushRecordToCloud(rec) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ key: state.settings.cloudKey || 'SPL_SYNC_2026', record: rec })
     });
+    const compactRec = Object.assign({}, rec);
+    const encoded = encodeURIComponent(JSON.stringify(compactRec));
+    if (encoded.length < 3500) {
+      await jsonpRequest(`${state.settings.cloudUrl}?key=${key}&save=${encoded}&_ts=${Date.now()}`).catch(() => {});
+    }
     return true;
   } catch (e) {
     console.error('Cloud push failed:', e);
@@ -2670,20 +2822,23 @@ async function syncCloudNow(silent) {
     if (!silent) alert('Set Google Apps Script Web App URL in Collection Centres & Cloud Sync first.');
     return;
   }
+  const key = encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026');
+  const getUrl = `${state.settings.cloudUrl}?key=${key}&_ts=${Date.now()}`;
   try {
-    // Push any local unsynced/recent records first so collection centre entries always go up
-    for (const rec of state.patients) {
-      await pushRecordToCloud(rec);
+    let data = null;
+    try {
+      const res = await fetch(getUrl);
+      data = await res.json();
+    } catch (fetchErr) {
+      data = await jsonpRequest(getUrl);
     }
-    const res = await fetch(state.settings.cloudUrl + '?key=' + encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026') + '&_ts=' + Date.now());
-    const data = await res.json();
     if (data && data.ok && Array.isArray(data.records)) {
       const map = new Map(state.patients.map(p => [p.id || p.labId, p]));
       data.records.forEach(r => {
-        const key = r.id || r.labId;
-        const prev = map.get(key);
+        const k = r.id || r.labId;
+        const prev = map.get(k);
         if (!prev || (r.updatedAt || '') >= (prev.updatedAt || '')) {
-          map.set(key, r);
+          map.set(k, r);
         }
       });
       state.patients = Array.from(map.values());
@@ -2749,7 +2904,7 @@ window.addEventListener('DOMContentLoaded', () => {
     syncCloudNow(true);
     setInterval(() => {
       if (state.settings.cloudUrl && !document.hidden) syncCloudNow(true);
-    }, 30000);
+    }, 20000);
   }
 });
 </script>
