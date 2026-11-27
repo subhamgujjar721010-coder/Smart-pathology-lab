@@ -2210,8 +2210,9 @@ async function saveBooking() {
 
   if (state.settings.cloudUrl) {
     const synced = await pushRecordToCloud(rec);
+    setTimeout(() => { syncCloudNow(true); }, 2600);
     alert(synced
-      ? `Booking Saved & Synced to Main Lab! Lab ID: ${labId}`
+      ? `Booking Saved & Sent to Cloud! Lab ID: ${labId}`
       : `Booking Saved Locally (Lab ID: ${labId}). Cloud Sync check karein.`);
   } else {
     alert(`Booking Saved! Lab ID: ${labId}\n(Note: Alag phone/PC se Main Lab mein bhejne ke liye Google Cloud Sync URL set karein.)`);
@@ -2795,20 +2796,81 @@ function jsonpRequest(url) {
   });
 }
 
+function sendViaHiddenIframe(url) {
+  return new Promise((resolve) => {
+    try {
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        setTimeout(() => {
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        }, 1500);
+        resolve(true);
+      };
+      iframe.onload = finish;
+      setTimeout(finish, 2500);
+      document.body.appendChild(iframe);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
 async function pushRecordToCloud(rec) {
-  if (!state.settings.cloudUrl) return false;
-  const key = encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026');
+  const cloudUrl = (state.settings.cloudUrl || '').trim();
+  if (!cloudUrl) return false;
+  const key = encodeURIComponent((state.settings.cloudKey || 'SPL_SYNC_2026').trim());
   try {
-    await fetch(state.settings.cloudUrl, {
+    fetch(cloudUrl, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ key: state.settings.cloudKey || 'SPL_SYNC_2026', record: rec })
-    });
-    const compactRec = Object.assign({}, rec);
+      body: JSON.stringify({ key: (state.settings.cloudKey || 'SPL_SYNC_2026').trim(), record: rec })
+    }).catch(() => {});
+
+    // Compact record for GET save fallback (keeps URL length safe)
+    const compactRec = {
+      id: rec.id,
+      labId: rec.labId,
+      date: rec.date,
+      mobile: rec.mobile,
+      name: rec.name,
+      age: rec.age,
+      gender: rec.gender,
+      refBy: rec.refBy,
+      centreCode: rec.centreCode,
+      total: rec.total,
+      discount: rec.discount,
+      net: rec.net,
+      paid: rec.paid,
+      due: rec.due,
+      payMode: rec.payMode,
+      status: rec.status,
+      sampleIssue: rec.sampleIssue,
+      remarks: rec.remarks,
+      deptComments: rec.deptComments || {},
+      updatedAt: rec.updatedAt || new Date().toISOString(),
+      items: (rec.items || []).map(it => ({
+        testId: it.testId,
+        code: it.code,
+        name: it.name,
+        dept: it.dept,
+        unit: it.unit,
+        ref: it.ref,
+        femaleRef: it.femaleRef || '',
+        min: it.min,
+        max: it.max,
+        value: it.value || '',
+        flag: it.flag || ''
+      }))
+    };
     const encoded = encodeURIComponent(JSON.stringify(compactRec));
-    if (encoded.length < 3500) {
-      await jsonpRequest(`${state.settings.cloudUrl}?key=${key}&save=${encoded}&_ts=${Date.now()}`).catch(() => {});
+    if (encoded.length < 6500) {
+      await sendViaHiddenIframe(`${cloudUrl}?key=${key}&save=${encoded}&_ts=${Date.now()}`);
     }
     return true;
   } catch (e) {
@@ -2818,35 +2880,42 @@ async function pushRecordToCloud(rec) {
 }
 
 async function syncCloudNow(silent) {
-  if (!state.settings.cloudUrl) {
-    if (!silent) alert('Set Google Apps Script Web App URL in Collection Centres & Cloud Sync first.');
+  const cloudUrl = (state.settings.cloudUrl || '').trim();
+  if (!cloudUrl) {
+    if (!silent) alert('Pehle "Collection Centres & Cloud Sync" mein Google Apps Script Web App URL (.../exec) daal kar Save Settings karein!');
     return;
   }
-  const key = encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026');
-  const getUrl = `${state.settings.cloudUrl}?key=${key}&_ts=${Date.now()}`;
+  const key = encodeURIComponent((state.settings.cloudKey || 'SPL_SYNC_2026').trim());
+  const getUrl = `${cloudUrl}?key=${key}&_ts=${Date.now()}`;
   try {
     let data = null;
     try {
+      data = await jsonpRequest(getUrl);
+    } catch (jsonpErr) {
       const res = await fetch(getUrl);
       data = await res.json();
-    } catch (fetchErr) {
-      data = await jsonpRequest(getUrl);
     }
     if (data && data.ok && Array.isArray(data.records)) {
       const map = new Map(state.patients.map(p => [p.id || p.labId, p]));
+      let addedOrUpdated = 0;
       data.records.forEach(r => {
+        if (!r) return;
         const k = r.id || r.labId;
+        if (!k) return;
         const prev = map.get(k);
         if (!prev || (r.updatedAt || '') >= (prev.updatedAt || '')) {
           map.set(k, r);
+          addedOrUpdated++;
         }
       });
       state.patients = Array.from(map.values());
       saveState();
-      if (!silent) alert('Cloud Synced! Total records: ' + state.patients.length);
+      if (!silent) alert(`Cloud Synced! Total records: ${state.patients.length}`);
+    } else if (!silent) {
+      alert('Cloud response invalid hai. Check karein ki Apps Script "Anyone" access par deploy hai aur Secret Key match karti hai.');
     }
   } catch (e) {
-    if (!silent) alert('Sync error: ' + e.message);
+    if (!silent) alert('Sync error: ' + e.message + ' — Check karein ki Apps Script Web App URL (.../exec) sahi hai aur access "Anyone" hai.');
   }
 }
 
