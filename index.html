@@ -850,7 +850,9 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-success" onclick="saveCloudSettings()">Save Settings</button>
         <button class="btn btn-primary" onclick="syncCloudNow(false)">Sync Now</button>
+        <button class="btn btn-white btn-sm" onclick="testCloudConnection()">Test Cloud URL</button>
       </div>
+      <div id="cloudDiagMsg" style="margin-top:8px;font-size:12px;color:#334155;"></div>
 
       <details style="margin-top:12px;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;background:#f8fafc;" open>
         <summary style="cursor:pointer;font-weight:700;font-size:12px;color:var(--primary);">Google Apps Script Code (Supports GET + POST + JSONP — Copy &amp; Deploy as "Anyone")</summary>
@@ -1957,6 +1959,7 @@ function handleUrlCentreLogin() {
   if (tokenObj && tokenObj.cloudUrl) {
     state.settings.cloudUrl = tokenObj.cloudUrl;
     state.settings.cloudKey = tokenObj.cloudKey || 'SPL_SYNC_2026';
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
   if (!ccParam) return;
@@ -2906,6 +2909,28 @@ async function pushRecordToCloud(rec) {
   } catch (e) {
     console.error('Cloud push failed:', e);
     return false;
+  }
+}
+
+
+async function testCloudConnection() {
+  const diag = document.getElementById('cloudDiagMsg');
+  const url = (document.getElementById('cfgCloudUrl').value || state.settings.cloudUrl || '').trim();
+  const key = encodeURIComponent((document.getElementById('cfgCloudKey').value || state.settings.cloudKey || 'SPL_SYNC_2026').trim());
+  if (!url) {
+    if (diag) diag.innerHTML = '<span style="color:#dc2626;font-weight:700;">Cloud URL khali hai! Doosre device ki booking aane ke liye Google Apps Script Web App URL (.../exec) zaroor chahiye.</span>';
+    return;
+  }
+  if (diag) diag.textContent = 'Testing connection...';
+  try {
+    const data = await jsonpRequest(`${url}?key=${key}&_ts=${Date.now()}`);
+    if (data && data.ok) {
+      if (diag) diag.innerHTML = `<span style="color:#15803d;font-weight:700;">Connected! Cloud mein ${Array.isArray(data.records) ? data.records.length : 0} records mile.</span>`;
+    } else {
+      if (diag) diag.innerHTML = '<span style="color:#dc2626;font-weight:700;">Auth failed: Secret Key check karein ya Apps Script ko "Anyone" par deploy karein.</span>';
+    }
+  } catch (e) {
+    if (diag) diag.innerHTML = `<span style="color:#dc2626;font-weight:700;">Connection failed: ${e.message}. URL (.../exec) aur "Anyone" deployment check karein.</span>`;
   }
 }
 
