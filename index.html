@@ -900,8 +900,9 @@
       <details style="margin-top:12px;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;background:#f8fafc;" open>
         <summary style="cursor:pointer;font-weight:700;font-size:12px;color:var(--primary);">Google Apps Script Code (Supports GET + POST + JSONP — Copy &amp; Deploy as "Anyone")</summary>
         <div class="code-box">const SECRET_KEY = "SPL_SYNC_2026";
+const SPREADSHEET_ID = "1DqMFXGzbDwYkjdZ7tL7nDaG26SnOzgQUcf9-FtXsoc8";
 function getSheet(name) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sh = ss.getSheetByName(name);
   if (!sh) { sh = ss.insertSheet(name); sh.appendRow(["id", "updatedAt", "json"]); }
   return sh;
@@ -1535,13 +1536,15 @@ let state = {
     doc2: '',
     sig2: '',
     stamp: '',
-    cloudUrl: '',
+    cloudUrl: 'https://script.google.com/macros/s/AKfycbxkDIr6w-tyBvE5BfRZRjQGogxmjYIRxUlXVmdmjT0b_XySuAQqqgYrc02nbcZ5b5P/exec',
     cloudKey: 'SPL_SYNC_2026',
     role: 'ADMIN',
     centreCode: 'MAIN',
     adminPin: '1234'
   },
-  centres: [],
+  centres: [
+    { name: 'Balaji Pathology Lab', code: 'BG001', pin: '4829', commPct: 20 }
+  ],
   tests: DEFAULT_TESTS,
   profiles: DEFAULT_PROFILES,
   patients: SAMPLE_PATIENTS,
@@ -1649,7 +1652,7 @@ function loadState() {
       if (state.settings.deptPageBreak === undefined) {
         state.settings.deptPageBreak = true;
       }
-      if (Array.isArray(parsed.centres)) state.centres = parsed.centres;
+      if (Array.isArray(parsed.centres) && parsed.centres.length) state.centres = parsed.centres;
       if (Array.isArray(parsed.tests) && parsed.tests.length) {
         state.tests = parsed.tests.map(t => Object.assign({ femaleRef: '', code: (t.code || t.id || '').toUpperCase() }, t));
       }
@@ -1662,7 +1665,11 @@ function loadState() {
         state.patients = mergePatientsPreservingOrder(state.patients, normalized);
       }
     }
+    if (!state.settings.cloudUrl) {
+      state.settings.cloudUrl = 'https://script.google.com/macros/s/AKfycbxkDIr6w-tyBvE5BfRZRjQGogxmjYIRxUlXVmdmjT0b_XySuAQqqgYrc02nbcZ5b5P/exec';
+    }
     mergeDefaultCatalogIntoState();
+    discoverCentresFromPatients();
   } catch (e) { console.error(e); }
 }
 
@@ -1860,6 +1867,23 @@ function appendToBookingRemark(text) {
   const el = document.getElementById('bkRemarks');
   if (!el) return;
   el.value = el.value.trim() ? (el.value.trim() + ' | ' + text) : text;
+}
+
+
+function discoverCentresFromPatients() {
+  const known = new Set(state.centres.map(c => (c.code || '').toUpperCase()));
+  state.patients.forEach(p => {
+    const code = (p.centreCode || '').trim().toUpperCase();
+    if (code && code !== 'MAIN' && !known.has(code)) {
+      known.add(code);
+      state.centres.push({
+        name: p.centreName || (code === 'BG001' ? 'Balaji Pathology Lab' : code),
+        code,
+        pin: '4829',
+        commPct: 20
+      });
+    }
+  });
 }
 
 function populateBookingCentres() {
@@ -3056,6 +3080,7 @@ function saveEditedBooking() {
   p.remarks = document.getElementById('editBkRemarks').value.trim();
   p.updatedAt = new Date().toISOString();
   saveState();
+  if (state.settings.cloudUrl) { pushRecordToCloud(p); }
   closeModal('modalEditBooking');
 }
 
@@ -3545,6 +3570,17 @@ async function syncCloudNow(silent) {
         }
       });
       state.patients = Array.from(map.values());
+      if (Array.isArray(data.centres)) {
+        const cMap = new Map(state.centres.map(c => [(c.code || '').toUpperCase(), c]));
+        data.centres.forEach(c => {
+          if (c && c.code) {
+            const k = c.code.toUpperCase();
+            if (!cMap.has(k)) cMap.set(k, c);
+          }
+        });
+        state.centres = Array.from(cMap.values());
+      }
+      discoverCentresFromPatients();
       saveState();
       if (!silent) alert(`Cloud Synced! Total records: ${state.patients.length}`);
     } else if (!silent) {
