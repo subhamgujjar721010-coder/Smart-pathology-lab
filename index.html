@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="color-scheme: light only;">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SMART PATHOLOGY LAB — Complete Lab Management & Online Reporting v3.2</title>
+  <meta name="color-scheme" content="light only" />
+  <title>SMART PATHOLOGY LAB — Complete Lab Management & Online Reporting v3.4</title>
   <style>
     :root {
+      color-scheme: light only;
       --primary: #151e73;
       --secondary: #0b6b5c;
       --accent: #059669;
@@ -18,47 +20,47 @@
       --warn: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); font-size: 14px; }
+    html, body { background: #f1f5f9 !important; color: #0f172a !important; font-size: 14px; }
     header.app-header {
       background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: #fff; padding: 14px 20px; display: flex; justify-content: space-between;
+      color: #ffffff !important; padding: 14px 20px; display: flex; justify-content: space-between;
       align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 3px 12px rgba(15,23,42,.18);
     }
     .brand-title { display: flex; align-items: center; gap: 12px; }
     .logo-badge {
-      width: 48px; height: 48px; border-radius: 10px; background: #fff; color: var(--primary);
+      width: 48px; height: 48px; border-radius: 10px; background: #ffffff !important; color: var(--primary);
       display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px;
       box-shadow: 0 2px 6px rgba(0,0,0,.15); flex-shrink: 0;
     }
-    .brand-title h1 { font-size: 20px; font-weight: 800; letter-spacing: .4px; }
+    .brand-title h1 { font-size: 20px; font-weight: 800; letter-spacing: .4px; color: #ffffff !important; }
     .pill {
       display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 800;
     }
     .ver-pill { background: #10b981; color: #064e3b; }
     .role-pill { background: #22c55e; color: #052e16; }
-    .centre-pill { background: rgba(255,255,255,.22); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+    .centre-pill { background: rgba(255,255,255,.22); color: #ffffff; border: 1px solid rgba(255,255,255,.35); }
     .header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .btn {
       border: none; border-radius: 7px; padding: 7px 13px; font-size: 12.5px; font-weight: 700;
       cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: .15s;
     }
     .btn:hover { opacity: .92; transform: translateY(-1px); }
-    .btn-primary { background: var(--secondary); color: #fff; }
-    .btn-success { background: var(--accent); color: #fff; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-warn { background: var(--warn); color: #fff; }
-    .btn-light { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.35); }
-    .btn-white { background: #fff; color: var(--primary); border: 1px solid #cbd5e1; }
-    .btn-dark { background: #0f172a; color: #fff; }
+    .btn-primary { background: var(--secondary); color: #ffffff !important; }
+    .btn-success { background: var(--accent); color: #ffffff !important; }
+    .btn-danger { background: var(--danger); color: #ffffff !important; }
+    .btn-warn { background: var(--warn); color: #ffffff !important; }
+    .btn-light { background: rgba(255,255,255,.16); color: #ffffff !important; border: 1px solid rgba(255,255,255,.35); }
+    .btn-white { background: #ffffff !important; color: var(--primary) !important; border: 1px solid #cbd5e1; }
+    .btn-dark { background: #0f172a; color: #ffffff !important; }
     .btn-sm { padding: 5px 10px; font-size: 11.5px; }
 
     nav.tabs {
-      background: #fff; border-bottom: 2px solid #e2e8f0; padding: 0 16px;
+      background: #ffffff !important; border-bottom: 2px solid #e2e8f0; padding: 0 16px;
       display: flex; gap: 6px; overflow-x: auto;
     }
     .tab-btn {
       background: transparent; border: none; padding: 12px 15px; font-size: 13px; font-weight: 700;
-      color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
+      color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
     }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: #f8fafc; }
     .count-chip {
@@ -74,7 +76,7 @@
     @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
 
     .card {
-      background: var(--card); border: 1px solid #e2e8f0; border-radius: 10px;
+      background: #ffffff !important; color: #0f172a !important; border: 1px solid #e2e8f0; border-radius: 10px;
       padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(15,23,42,.04);
     }
     .card h2 {
@@ -87,7 +89,7 @@
     label { display: block; font-size: 11.5px; font-weight: 700; color: #334155; margin-bottom: 4px; }
     input, select, textarea {
       width: 100%; padding: 8px 10px; border: 1px solid var(--border);
-      border-radius: 6px; font-size: 13px; background: #fff; color: var(--text);
+      border-radius: 6px; font-size: 13px; background: #ffffff !important; color: #0f172a !important;
     }
     input:focus, select:focus, textarea:focus { outline: 2px solid #93c5fd; border-color: var(--secondary); }
 
@@ -101,8 +103,8 @@
     .preset-chip:hover { background: #e0f2fe; border-color: #0284c7; color: #0369a1; }
 
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #f1f5f9; color: #334155; text-align: left; padding: 9px 10px; border-bottom: 2px solid #cbd5e1; font-size: 12px; }
-    td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    th { background: #f1f5f9 !important; color: #334155 !important; text-align: left; padding: 9px 10px; border-bottom: 2px solid #cbd5e1; font-size: 12px; }
+    td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; color: #0f172a; }
     tr:hover td { background: #f8fafc; }
 
     .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
@@ -126,24 +128,24 @@
     .tube-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,.25); }
 
     .test-chip-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-      gap: 8px; max-height: 290px; overflow-y: auto; padding: 4px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 8px; max-height: 310px; overflow-y: auto; padding: 4px;
     }
     .test-chip {
       border: 1px solid #cbd5e1; border-radius: 7px; padding: 8px 10px;
       cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-      background: #fff; font-size: 12.5px;
+      background: #ffffff; font-size: 12.5px; color: #0f172a;
     }
     .test-chip.selected { background: #eff6ff; border-color: #2563eb; font-weight: 700; }
 
     .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 12px 14px; }
-    .kpi-box small { color: var(--muted); font-weight: 700; font-size: 11px; text-transform: uppercase; }
+    .kpi-box small { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; }
     .kpi-box div { font-size: 21px; font-weight: 800; color: var(--primary); margin-top: 4px; }
 
-    /* A4 Report Preview */
+    /* A4 Report Preview — strictly light colors so mobile dark mode never turns report black */
     .a4-wrapper { background: #cbd5e1; padding: 18px; border-radius: 10px; overflow-x: auto; }
     .a4-sheet {
-      width: 794px; min-height: 1060px; margin: 0 auto; background: #fff;
+      width: 794px; min-height: 1060px; margin: 0 auto; background: #ffffff !important; color: #0f172a !important;
       box-shadow: 0 8px 28px rgba(0,0,0,.18); display: flex; flex-direction: column;
       justify-content: space-between; position: relative; overflow: hidden;
     }
@@ -152,97 +154,24 @@
       pointer-events: none; z-index: 0; transform: rotate(-28deg);
       font-size: 46px; font-weight: 900; color: rgba(15,76,129,.06); letter-spacing: 3px; text-align: center;
     }
-    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 1060px; }
+    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 1060px; background: transparent; }
+
+    /* Software-Style Letterhead Banner (matches app header) */
     .rep-banner {
       background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: #fff; padding: 18px 26px; display: flex; justify-content: space-between; align-items: center; gap: 14px;
+      color: #ffffff !important; padding: 18px 26px; display: flex; justify-content: space-between; align-items: center; gap: 14px;
     }
-    .rep-banner.classic { background: #fff; color: #0f172a; border-bottom: 3px solid var(--primary); }
-    .rep-banner.compact { padding: 10px 26px; background: #f8fafc; color: #0f172a; border-bottom: 2px solid var(--primary); }
-    .rep-banner.blank { display: none; }
-    .rep-logo { width: 58px; height: 58px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px; }
-
-    /* Unique Diagnostic Studio Letterhead */
-    .lh-unique-studio {
-      background: #ffffff; padding: 16px 24px 12px 24px;
-      border-bottom: 3px solid var(--primary); display: none;
-    }
-    .lh-u-top {
-      display: flex; justify-content: space-between; align-items: center; gap: 14px;
-      padding-bottom: 12px; border-bottom: 1.5px solid #e2e8f0;
-    }
-    .lh-u-brand { display: flex; align-items: center; gap: 14px; }
-    .lh-u-emblem {
-      width: 62px; height: 62px; border-radius: 16px 4px 16px 4px;
-      background: #ffffff; border: 2px solid var(--primary);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12); flex-shrink: 0;
-    }
-    .lh-u-title { font-size: 22px; font-weight: 900; color: var(--primary); letter-spacing: 0.5px; line-height: 1.1; }
-    .lh-u-tag { font-size: 11.5px; font-weight: 700; color: var(--secondary); margin-top: 3px; }
-    .lh-u-meta-pill {
-      background: #f8fafc; border: 1px solid #cbd5e1; border-left: 4px solid var(--secondary);
-      border-radius: 8px; padding: 8px 12px; font-size: 11px; font-weight: 700;
-      color: #0f172a; text-align: right; line-height: 1.35;
-    }
-    .lh-u-strip {
-      margin-top: 8px; background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-      color: #ffffff; border-radius: 999px; padding: 5px 14px; font-size: 11px; font-weight: 700;
-      display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-    }
-
-    /* Royal Executive Letterhead */
-    .lh-royal-exec { background: #ffffff; padding: 0 0 10px 0; border-bottom: 2px solid var(--primary); display: none; }
-    .lh-r-bar { height: 8px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
-    .lh-r-inner { padding: 14px 24px 8px 24px; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
-    .lh-r-left { display: flex; align-items: center; gap: 12px; }
-    .lh-r-ring {
-      width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid var(--primary);
-      display: flex; align-items: center; justify-content: center; background: #f8fafc; flex-shrink: 0;
-    }
-    .lh-r-name { font-size: 20px; font-weight: 900; color: #0f172a; letter-spacing: 0.4px; }
-    .lh-r-addr { font-size: 11.5px; color: #475569; font-weight: 700; margin-top: 2px; }
-    .lh-r-badge {
-      background: var(--primary); color: #ffffff; font-size: 10.5px; font-weight: 800;
-      padding: 5px 11px; border-radius: 6px; letter-spacing: 0.4px;
-    }
-
-    /* D-Shape Signature Letterhead */
-    .sw-letterhead { background: #ffffff; padding: 14px 22px 10px 22px; border-bottom: 2.5px solid var(--primary); display: none; }
-    .lh-banner-grid { display: grid; grid-template-columns: 1.15fr 0.78fr 0.35fr; gap: 10px; align-items: stretch; }
-    .lh-left-card {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      border-radius: 3px; padding: 10px 12px 10px 0; display: flex; align-items: center; min-height: 118px;
-    }
-    .lh-d-shape {
-      background: #ffffff; border-top-right-radius: 68px; border-bottom-right-radius: 68px;
-      padding: 10px 16px 10px 10px; width: 92%; text-align: center;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .lh-sp-logo { font-size: 28px; font-weight: 900; line-height: 1; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .lh-pill-sub { margin-top: 4px; font-size: 9px; font-weight: 900; color: #0f172a; letter-spacing: .3px; }
-    .lh-mid-col { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
-    .lh-tagline { font-size: 11px; line-height: 1.25; font-weight: 700; color: #0f172a; }
-    .lh-right-title-box {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: #ffffff; border-radius: 3px; padding: 8px 6px; text-align: center; font-weight: 900; font-size: 13px; line-height: 1.15;
-    }
-    .lh-right-col { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .nabl-seal {
-      width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--primary); color: var(--primary);
-      display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 9px; font-weight: 900; line-height: 1.05;
-    }
-    .nabl-code { margin-top: 4px; font-size: 9.5px; font-weight: 800; color: #0f172a; }
-    .lh-address-bar { margin-top: 8px; padding-top: 6px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11.5px; font-weight: 800; color: #0f172a; }
+    .rep-banner.blank { display: none !important; }
+    .rep-logo { width: 54px; height: 54px; object-fit: contain; background: #ffffff; border-radius: 10px; padding: 4px; flex-shrink: 0; }
 
     .rep-patient-grid {
       display: grid; grid-template-columns: 1fr 1fr 130px; gap: 10px;
-      padding: 12px 26px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;
+      padding: 12px 26px; background: #f8fafc !important; color: #0f172a !important; border-bottom: 2px solid #cbd5e1;
       font-size: 12.5px; align-items: center;
     }
-    .rep-body { padding: 14px 26px; flex: 1; }
+    .rep-body { padding: 14px 26px; flex: 1; background: #ffffff !important; color: #0f172a !important; }
     .rep-dept {
-      background: #eff6ff; color: var(--primary); font-weight: 800; font-size: 12px;
+      background: #eff6ff !important; color: var(--primary) !important; font-weight: 800; font-size: 12px;
       padding: 5px 10px; border-left: 4px solid var(--primary); margin: 12px 0 6px; text-transform: uppercase;
     }
     .rep-dept-break {
@@ -254,15 +183,15 @@
     }
     .rep-dept-comment-box {
       margin-top: 6px; margin-bottom: 10px; padding: 7px 12px;
-      background: #f8fafc; border-left: 3px solid var(--secondary); border-radius: 4px;
-      font-size: 11.5px; color: #1e293b;
+      background: #f8fafc !important; border-left: 3px solid var(--secondary); border-radius: 4px;
+      font-size: 11.5px; color: #1e293b !important;
     }
     .rep-summary-box {
-      margin-top: 12px; padding: 9px 12px; background: #f0fdf4;
-      border: 1px solid #bbf7d0; border-radius: 6px; font-size: 12px; color: #0f172a;
+      margin-top: 12px; padding: 9px 12px; background: #f0fdf4 !important;
+      border: 1px solid #bbf7d0; border-radius: 6px; font-size: 12px; color: #0f172a !important;
     }
     .rep-footer {
-      padding: 14px 26px 20px; border-top: 1px solid #cbd5e1;
+      padding: 14px 26px 20px; border-top: 1px solid #cbd5e1; background: #ffffff !important; color: #0f172a !important;
       display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; font-size: 11.5px;
     }
     .sig-row { display: flex; gap: 22px; align-items: flex-end; }
@@ -276,7 +205,7 @@
     }
     .modal-backdrop.open { display: flex; }
     .modal-card {
-      background: #fff; width: 100%; max-width: 740px; max-height: 90vh; overflow-y: auto;
+      background: #ffffff !important; color: #0f172a !important; width: 100%; max-width: 740px; max-height: 90vh; overflow-y: auto;
       border-radius: 12px; padding: 18px; box-shadow: 0 16px 40px rgba(0,0,0,.25);
     }
     .modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; }
@@ -326,7 +255,7 @@
     <div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <h1 id="hdrLabName">SMART PATHOLOGY LAB</h1>
-        <span class="pill ver-pill">v3.2</span>
+        <span class="pill ver-pill">v3.4</span>
         <span class="pill role-pill" id="roleBadge">ADMIN LAB</span>
         <span class="pill centre-pill" id="centreBadge">MAIN</span>
       </div>
@@ -336,6 +265,7 @@
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-light btn-sm" id="btnSyncTop" onclick="syncCloudNow()">Sync Data</button>
     <button class="btn btn-light btn-sm" id="btnExitCcMode" style="display:none;" onclick="exitCollectionCentreToAdmin()">Switch to Admin (PIN)</button>
     <button class="btn btn-light btn-sm" id="btnCloudRole" onclick="openModal('modalCloud')">Collection Centres &amp; Cloud Sync <span style="background:#cbd5e1;color:#0f172a;padding:1px 6px;border-radius:999px;font-size:10px;" id="cloudStatusTag">Offline</span></button>
     <button class="btn btn-light btn-sm" id="btnBranding" onclick="openModal('modalBranding')">Branding, Letterhead &amp; Logo</button>
@@ -425,14 +355,14 @@
         </div>
 
         <div class="card">
-          <h2>Select Health Profiles / Packages</h2>
+          <h2>Select Complete Profiles / Panels (CBC, LFT, KFT, Lipid, Thyroid, Fever)</h2>
           <div id="profileButtons" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         </div>
 
         <div class="card">
           <h2>
-            <span>Select Individual Tests (Search by Code or Name)</span>
-            <input type="text" id="testSearch" placeholder="Code or test name..." style="width:210px;padding:5px 8px;font-size:12px;" oninput="renderBookingTests()" />
+            <span>Select Individual Tests (Search by Code, Name or Dept)</span>
+            <input type="text" id="testSearch" placeholder="Code or test name..." style="width:220px;padding:5px 8px;font-size:12px;" oninput="renderBookingTests()" />
           </h2>
           <div id="bookingTestGrid" class="test-chip-grid"></div>
         </div>
@@ -442,7 +372,7 @@
         <div class="card">
           <h2>Selected Tests &amp; Automated Sample Tube Guide</h2>
           <div id="tubeGuideBox" style="margin-bottom:10px;padding:8px;background:#f8fafc;border-radius:8px;border:1px dashed #cbd5e1;">
-            <small style="color:#64748b;">Select tests to view required vacutainer tubes.</small>
+            <small style="color:#64748b;">Select tests or a complete panel (CBC, LFT, KFT, Lipid) to view required tubes.</small>
           </div>
           <table>
             <thead><tr><th>Code</th><th>Test Name</th><th>Dept</th><th>Rate (₹)</th><th></th></tr></thead>
@@ -481,7 +411,10 @@
   <!-- TAB 2: PENDING QUEUE -->
   <div id="tabPending" class="tab-pane">
     <div class="card">
-      <h2>Pending Samples &amp; Report Queue</h2>
+      <h2>
+        <span>Pending Samples &amp; Report Queue</span>
+        <button class="btn btn-primary btn-sm" onclick="syncCloudNow()">Refresh / Sync Cloud</button>
+      </h2>
       <table>
         <thead>
           <tr><th>Lab ID</th><th>Date</th><th>Patient</th><th>Centre</th><th>Tests (Code)</th><th>Remarks / Sample Note</th><th>Status</th><th>Actions</th></tr>
@@ -495,7 +428,7 @@
   <div id="tabResult" class="tab-pane">
     <div class="card">
       <h2>
-        <span>Enter &amp; Verify Diagnostic Results (Bottom Panel Comments &amp; Flexible Remarks)</span>
+        <span>Enter &amp; Verify Diagnostic Results (Bottom Panel Comments &amp; Auto-Calculations)</span>
         <select id="resPatientSelect" style="max-width:340px;" onchange="loadResultEditor(this.value)"></select>
       </h2>
       <div id="resultEditorArea">
@@ -509,7 +442,7 @@
     <div class="card">
       <h2>
         <span>Workload, Billing &amp; Collection Centre Analytics</span>
-        <button class="btn btn-white btn-sm" onclick="openModal('modalCloud')">+ Add / Manage Collection Centres</button>
+        <button class="btn btn-white btn-sm" id="btnManageCentresWl" onclick="openModal('modalCloud')">+ Add / Manage Collection Centres</button>
       </h2>
       <div class="form-row">
         <div>
@@ -567,17 +500,12 @@
         <span>A4 Report Preview (1 Panel Per Page), Direct PDF Download &amp; Sharing</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <select id="prevPatientSelect" style="width:220px;" onchange="renderReportPreview(this.value)"></select>
-          <select id="prevLetterheadSelect" style="width:220px;" onchange="changeLetterheadStyle(this.value)" title="Change Letterhead Design">
-            <option value="unique_studio">Letterhead: Unique Studio (Stylish)</option>
-            <option value="royal_exec">Letterhead: Royal Executive</option>
-            <option value="sw_dshape">Letterhead: D-Shape (SPL Design)</option>
-            <option value="banner">Letterhead: Gradient Banner</option>
-            <option value="classic">Letterhead: Classic White</option>
-            <option value="compact">Letterhead: Compact</option>
-            <option value="blank">Letterhead: Pre-Printed (No Header)</option>
+          <select id="prevLetterheadSelect" style="width:210px;" onchange="changeLetterheadStyle(this.value)" title="Letterhead Option">
+            <option value="banner">Letterhead: With Header</option>
+            <option value="blank">Letterhead: Without Header</option>
           </select>
           <select id="prevLogoPresetSelect" style="width:155px;" onchange="changeLogoPreset(this.value)" title="Change Lab Logo">
-            <option value="sp_text">Logo: SP Monogram</option>
+            <option value="sp_text">Logo: SPL Badge</option>
             <option value="microscope">Logo: Microscope</option>
             <option value="dna">Logo: DNA Helix</option>
             <option value="custom">Logo: Uploaded Image</option>
@@ -610,74 +538,18 @@
           <div id="repWatermarkLayer" class="watermark-layer">SMART PATHOLOGY LAB</div>
           <div class="sheet-inner">
             <div>
-              <!-- UNIQUE STUDIO LETTERHEAD -->
-              <div id="repUniqueStudio" class="lh-unique-studio">
-                <div class="lh-u-top">
-                  <div class="lh-u-brand">
-                    <div class="lh-u-emblem" id="usLogoBox"></div>
-                    <div>
-                      <div class="lh-u-title" id="usLabTitle">SMART PATHOLOGY LAB</div>
-                      <div class="lh-u-tag" id="usLabTag">Accurate • Caring • Instant Diagnostic Services</div>
-                    </div>
-                  </div>
-                  <div class="lh-u-meta-pill" id="usRightBox">DIAGNOSTIC E-REPORT</div>
-                </div>
-                <div class="lh-u-strip">
-                  <span id="usAddrText">391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.)</span>
-                  <span id="usPhoneText">Mob.: 9548593164</span>
-                </div>
-              </div>
-
-              <!-- ROYAL EXECUTIVE LETTERHEAD -->
-              <div id="repRoyalExec" class="lh-royal-exec">
-                <div class="lh-r-bar"></div>
-                <div class="lh-r-inner">
-                  <div class="lh-r-left">
-                    <div class="lh-r-ring" id="reLogoBox"></div>
-                    <div>
-                      <div class="lh-r-name" id="reLabTitle">SMART PATHOLOGY LAB</div>
-                      <div class="lh-r-addr" id="reLabAddr">391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164</div>
-                    </div>
-                  </div>
-                  <div class="lh-r-badge" id="reRightBox">PATHOLOGY REPORT</div>
-                </div>
-              </div>
-
-              <!-- D-SHAPE SPL LETTERHEAD -->
-              <div id="repSwLetterhead" class="sw-letterhead">
-                <div class="lh-banner-grid">
-                  <div class="lh-left-card">
-                    <div class="lh-d-shape">
-                      <div id="swLogoVisual" class="lh-sp-logo"></div>
-                      <div class="lh-pill-sub" id="swLabPill">SMART PATHOLOGY LAB</div>
-                    </div>
-                  </div>
-                  <div class="lh-mid-col">
-                    <div class="lh-tagline" id="swTagline">Accurate<br />Diagnostics<br />&amp; Digital<br />Reporting<br />System</div>
-                    <div class="lh-right-title-box" id="swBannerTitle">SMART<br />PATHOLOGY<br />LAB</div>
-                  </div>
-                  <div class="lh-right-col" id="swRightCol">
-                    <div class="nabl-seal">NABL<br />INDIA</div>
-                    <div class="nabl-code" id="swNablCode">NABL-M(EL)T-02677</div>
-                  </div>
-                </div>
-                <div class="lh-address-bar" id="swAddressBar">
-                  391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164
-                </div>
-              </div>
-
-              <!-- BANNER / CLASSIC / COMPACT LETTERHEAD -->
+              <!-- SOFTWARE-STYLE HEADER BANNER (With Header / Without Header) -->
               <div id="repBannerBox" class="rep-banner">
                 <div style="display:flex;align-items:center;gap:14px;">
                   <img id="repLogoImg" class="rep-logo" style="display:none;" alt="Logo" />
-                  <div id="repPresetLogoBox" style="display:none;background:#fff;border-radius:8px;padding:6px;"></div>
+                  <div id="repPresetLogoBox" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;background:#ffffff;border-radius:10px;flex-shrink:0;"></div>
                   <div>
-                    <h2 id="repLabTitle" style="font-size:22px;font-weight:800;letter-spacing:.4px;">SMART PATHOLOGY LAB</h2>
-                    <div id="repLabTag" style="font-size:12px;opacity:.92;">Accurate • Caring • Instant Diagnostic Services</div>
-                    <div id="repLabAddr" style="font-size:11.5px;opacity:.9;margin-top:2px;">391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164</div>
+                    <h2 id="repLabTitle" style="font-size:21px;font-weight:800;letter-spacing:.4px;color:#ffffff !important;">SMART PATHOLOGY LAB</h2>
+                    <div id="repLabTag" style="font-size:12px;opacity:.94;color:#ffffff !important;">Accurate • Caring • Instant Diagnostic Services</div>
+                    <div id="repLabAddr" style="font-size:11.5px;opacity:.92;margin-top:2px;color:#ffffff !important;">391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164</div>
                   </div>
                 </div>
-                <div id="repNablBox" style="text-align:right;font-size:11px;font-weight:700;background:rgba(255,255,255,.15);padding:6px 10px;border-radius:7px;"></div>
+                <div id="repNablBox" style="text-align:right;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);padding:6px 10px;border-radius:7px;color:#ffffff !important;"></div>
               </div>
 
               <div class="rep-patient-grid">
@@ -692,7 +564,7 @@
                   <div><strong>Referred By:</strong> <span id="rpRef">-</span></div>
                 </div>
                 <div style="text-align:center;">
-                  <canvas id="repQrCanvas" width="120" height="120" style="width:110px;height:110px;border:1px solid #cbd5e1;background:#fff;padding:4px;"></canvas>
+                  <canvas id="repQrCanvas" width="120" height="120" style="width:110px;height:110px;border:1px solid #cbd5e1;background:#ffffff;padding:4px;"></canvas>
                 </div>
               </div>
 
@@ -720,18 +592,24 @@
   <!-- TAB 6: TEST MASTER -->
   <div id="tabMaster" class="tab-pane">
     <div class="card">
-      <h2>Add / Update Diagnostic Test (With Test Code, Department Comment &amp; Gender Range)</h2>
+      <h2>
+        <span>Add / Update Diagnostic Test (With Test Code, Department Comment &amp; Gender Range)</span>
+        <button class="btn btn-warn btn-sm" onclick="restoreDefaultCatalog()">Load Full Default Test Catalog (CBC, LFT, KFT, Lipid...)</button>
+      </h2>
       <div class="form-row">
         <div><label>Test Code *</label><input type="text" id="tmCode" placeholder="e.g. HB, FBS, TSH" style="text-transform:uppercase;" /></div>
         <div><label>Test Name *</label><input type="text" id="tmName" placeholder="e.g. Hemoglobin (Hb)" /></div>
         <div>
-          <label>Department</label>
+          <label>Department / Panel</label>
           <select id="tmDept">
-            <option value="HAEMATOLOGY">HAEMATOLOGY</option>
+            <option value="HAEMATOLOGY (CBC)">HAEMATOLOGY (CBC)</option>
+            <option value="LIVER FUNCTION TEST (LFT)">LIVER FUNCTION TEST (LFT)</option>
+            <option value="KIDNEY FUNCTION TEST (KFT)">KIDNEY FUNCTION TEST (KFT)</option>
+            <option value="LIPID PROFILE">LIPID PROFILE</option>
             <option value="BIOCHEMISTRY">BIOCHEMISTRY</option>
-            <option value="IMMUNOASSAY">IMMUNOASSAY</option>
-            <option value="CLINICAL PATHOLOGY">CLINICAL PATHOLOGY</option>
+            <option value="THYROID & IMMUNOASSAY">THYROID &amp; IMMUNOASSAY</option>
             <option value="SEROLOGY">SEROLOGY</option>
+            <option value="CLINICAL PATHOLOGY">CLINICAL PATHOLOGY</option>
           </select>
         </div>
         <div><label>Unit</label><input type="text" id="tmUnit" placeholder="g/dL, mg/dL..." /></div>
@@ -752,15 +630,15 @@
       </div>
       <div class="form-row">
         <div><label>Female Ref Range (Optional)</label><input type="text" id="tmFemaleRef" placeholder="e.g. 12.0 - 15.0" /></div>
-        <div><label>Department Bottom Comment (Optional)</label><input type="text" id="tmComment" placeholder="e.g. Correlate clinically with panel values" /></div>
+        <div><label>Panel Bottom Comment (Optional)</label><input type="text" id="tmComment" placeholder="e.g. Correlate clinically with panel values" /></div>
       </div>
       <button class="btn btn-primary" onclick="addTestMaster()">Add Test to Master</button>
     </div>
 
     <div class="card">
-      <h2>All Diagnostic Tests</h2>
+      <h2>All Diagnostic Tests (<span id="masterTestCount">0</span>)</h2>
       <table>
-        <thead><tr><th>Code</th><th>Test Name</th><th>Department</th><th>Unit</th><th>Ref Range</th><th>Tube</th><th>Rate (₹)</th><th>Action</th></tr></thead>
+        <thead><tr><th>Code</th><th>Test Name</th><th>Department / Panel</th><th>Unit</th><th>Ref Range</th><th>Tube</th><th>Rate (₹)</th><th>Action</th></tr></thead>
         <tbody id="masterTableBody"></tbody>
       </table>
     </div>
@@ -825,15 +703,10 @@
     <div class="form-row">
       <div><label>NABL Certificate No. (Optional)</label><input type="text" id="cfgNabl" placeholder="NABL-M(EL)T-02677" /></div>
       <div>
-        <label>Default Letterhead Style</label>
+        <label>Default Letterhead Option</label>
         <select id="cfgHeaderStyle">
-          <option value="unique_studio">Unique Studio (Stylish)</option>
-          <option value="royal_exec">Royal Executive</option>
-          <option value="sw_dshape">D-Shape (SPL Design)</option>
-          <option value="banner">Gradient Banner</option>
-          <option value="classic">Classic White</option>
-          <option value="compact">Compact</option>
-          <option value="blank">Pre-Printed (No Header)</option>
+          <option value="banner">Letterhead: With Header</option>
+          <option value="blank">Letterhead: Without Header</option>
         </select>
       </div>
     </div>
@@ -849,7 +722,7 @@
       <div>
         <label>Lab Logo Icon Style</label>
         <select id="cfgLogoPreset">
-          <option value="sp_text">SP Monogram</option>
+          <option value="sp_text">SPL Badge</option>
           <option value="microscope">Microscope Icon</option>
           <option value="dna">DNA Helix Icon</option>
           <option value="custom">Custom Uploaded Image</option>
@@ -896,10 +769,14 @@
       <button class="btn btn-white btn-sm" onclick="closeModal('modalCloud')">Close</button>
     </div>
 
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#1e3a8a;">
+      <strong>Important (Two-Device Sync):</strong> Agar Collection Centre alag phone/PC par khulega, toh pehle niche <strong>Google Apps Script Web App URL</strong> daal kar Save karein aur phir <strong>Copy Link</strong> dabayein. Us link mein Cloud URL apne aap jud kar centre device par chala jayega aur centre ki entry Main Lab software mein dikhne lagegi.
+    </div>
+
     <h4 style="font-size:13.5px;color:var(--primary);margin-bottom:8px;">Add / Manage Collection Centres</h4>
     <div class="form-row">
-      <div><label>Centre Name</label><input type="text" id="ccAddName" placeholder="Civil Lines Centre" /></div>
-      <div><label>Centre Code</label><input type="text" id="ccAddCode" placeholder="CC-01" /></div>
+      <div><label>Centre Name</label><input type="text" id="ccAddName" placeholder="Balaji Pathology Lab" /></div>
+      <div><label>Centre Code</label><input type="text" id="ccAddCode" placeholder="BG001" /></div>
       <div><label>Access Code</label><input type="text" id="ccAddPin" placeholder="4829" /></div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
@@ -914,7 +791,7 @@
     <div style="border-top:1px solid #e2e8f0;padding-top:12px;margin-top:14px;">
       <h4 style="font-size:13.5px;color:var(--primary);margin-bottom:8px;">Role &amp; Google Sheets Cloud Sync</h4>
       <div class="form-row">
-        <div><label>Google Apps Script Web App URL (.../exec)</label><input type="text" id="cfgCloudUrl" /></div>
+        <div><label>Google Apps Script Web App URL (.../exec)</label><input type="text" id="cfgCloudUrl" placeholder="https://script.google.com/macros/s/.../exec" /></div>
         <div><label>Sync Secret Key</label><input type="text" id="cfgCloudKey" value="SPL_SYNC_2026" /></div>
       </div>
       <div class="form-row">
@@ -934,7 +811,7 @@
       </div>
 
       <details style="margin-top:12px;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;background:#f8fafc;">
-        <summary style="cursor:pointer;font-weight:700;font-size:12px;color:var(--primary);">Google Apps Script Code (Two-Device Cloud Sync)</summary>
+        <summary style="cursor:pointer;font-weight:700;font-size:12px;color:var(--primary);">Google Apps Script Code (Two-Device Cloud Sync — Copy &amp; Deploy as "Anyone")</summary>
         <div class="code-box">const SECRET_KEY = "SPL_SYNC_2026";
 function getSheet(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1235,9 +1112,12 @@ const STORAGE_KEY = 'SMART_PATHOLOGY_LAB_V27_ROORKEE';
 const DEFAULT_REPORT_PAGE_URL = 'https://subhamgujjar721010-coder.github.io/Smart-pathology-lab/report.html';
 
 const DEFAULT_DEPT_COMMENTS = {
-  'HAEMATOLOGY': 'Haematology panel evaluated on automated cell counter; correlate with clinical findings and peripheral smear if indicated.',
+  'HAEMATOLOGY (CBC)': 'Complete Blood Count (CBC) evaluated on automated hematology analyzer; correlate with clinical findings and peripheral blood smear if indicated.',
+  'LIVER FUNCTION TEST (LFT)': 'Liver Function Test (LFT) parameters evaluated on calibrated biochemistry analyzer; correlate with hepatobiliary history and clinical findings.',
+  'KIDNEY FUNCTION TEST (KFT)': 'Kidney Function Test (KFT / RFT) parameters evaluated; correlate with hydration status, blood pressure, and eGFR.',
+  'LIPID PROFILE': 'Lipid Profile evaluated; 12-14 hours overnight fasting sample recommended for accurate triglyceride and LDL assessment.',
   'BIOCHEMISTRY': 'Biochemistry parameters evaluated on calibrated analyzer; interpret with fasting status and clinical history.',
-  'IMMUNOASSAY': 'Immunoassay values interpreted alongside clinical presentation and related endocrine/vitamin markers.',
+  'THYROID & IMMUNOASSAY': 'Endocrine & immunoassay values interpreted alongside clinical presentation and medication history.',
   'SEROLOGY': 'Serological results should be correlated clinically with duration of illness and repeat/confirmatory testing if advised.',
   'CLINICAL PATHOLOGY': 'Routine microscopic examination performed on provided specimen; correlate clinically.'
 };
@@ -1259,59 +1139,132 @@ const DEPT_COMMENT_OPTIONS = [
   'Sample repeat / re-collection advised before final interpretation.'
 ];
 
+// COMPLETE STANDARD PATHOLOGY CATALOG: CBC, LFT, KFT, LIPID, DIABETES, THYROID, SEROLOGY, CLINICAL PATHOLOGY
 const DEFAULT_TESTS = [
-  // HAEMATOLOGY
-  { id: 't1', code: 'HB', name: 'Hemoglobin (Hb)', dept: 'HAEMATOLOGY', unit: 'g/dL', ref: '13.0 - 17.0', femaleRef: '12.0 - 15.0', min: 13.0, max: 17.0, rate: 100, tube: 'EDTA (Purple)' },
-  { id: 't2', code: 'TLC', name: 'Total Leukocyte Count (TLC)', dept: 'HAEMATOLOGY', unit: '/cumm', ref: '4000 - 11000', femaleRef: '', min: 4000, max: 11000, rate: 150, tube: 'EDTA (Purple)' },
-  { id: 't3', code: 'PLT', name: 'Platelet Count', dept: 'HAEMATOLOGY', unit: 'Lakhs/cumm', ref: '1.50 - 4.50', femaleRef: '', min: 1.5, max: 4.5, rate: 150, tube: 'EDTA (Purple)' },
-  { id: 't7', code: 'RBC', name: 'Total RBC Count', dept: 'HAEMATOLOGY', unit: 'mill/cumm', ref: '4.5 - 5.9', femaleRef: '4.1 - 5.1', min: 4.5, max: 5.9, rate: 120, tube: 'EDTA (Purple)' },
-  { id: 't8', code: 'PCV', name: 'Hematocrit (PCV)', dept: 'HAEMATOLOGY', unit: '%', ref: '40 - 50', femaleRef: '36 - 46', min: 40, max: 50, rate: 100, tube: 'EDTA (Purple)' },
-  { id: 't9', code: 'MCV', name: 'Mean Corpuscular Volume (MCV)', dept: 'HAEMATOLOGY', unit: 'fL', ref: '80 - 100', femaleRef: '', min: 80, max: 100, rate: 90, tube: 'EDTA (Purple)' },
-  { id: 't10', code: 'MCH', name: 'Mean Corpuscular Hemoglobin (MCH)', dept: 'HAEMATOLOGY', unit: 'pg', ref: '27.0 - 32.0', femaleRef: '', min: 27.0, max: 32.0, rate: 90, tube: 'EDTA (Purple)' },
-  { id: 't11', code: 'MCHC', name: 'MCHC', dept: 'HAEMATOLOGY', unit: 'g/dL', ref: '31.5 - 35.5', femaleRef: '', min: 31.5, max: 35.5, rate: 90, tube: 'EDTA (Purple)' },
-  { id: 't12', code: 'ESR', name: 'Erythrocyte Sedimentation Rate (ESR)', dept: 'HAEMATOLOGY', unit: 'mm/1st hr', ref: '0 - 15', femaleRef: '0 - 20', min: 0, max: 15, rate: 100, tube: 'EDTA (Purple)' },
-  { id: 't13', code: 'DLC', name: 'Differential Leukocyte Count (DLC)', dept: 'HAEMATOLOGY', unit: '%', ref: 'Neutrophils 40-70, Lymph 20-40', femaleRef: '', min: null, max: null, rate: 120, tube: 'EDTA (Purple)' },
+  // 1. HAEMATOLOGY (CBC — Complete 14 Parameters)
+  { id: 'cbc_hb', code: 'HB', name: 'Hemoglobin (Hb)', dept: 'HAEMATOLOGY (CBC)', unit: 'g/dL', ref: '13.0 - 17.0', femaleRef: '12.0 - 15.0', min: 13.0, max: 17.0, rate: 100, tube: 'EDTA (Purple)' },
+  { id: 'cbc_rbc', code: 'RBC', name: 'Total RBC Count', dept: 'HAEMATOLOGY (CBC)', unit: 'mill/cumm', ref: '4.5 - 5.9', femaleRef: '4.1 - 5.1', min: 4.5, max: 5.9, rate: 100, tube: 'EDTA (Purple)' },
+  { id: 'cbc_pcv', code: 'PCV', name: 'Hematocrit (PCV / HCT)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '40.0 - 50.0', femaleRef: '36.0 - 46.0', min: 40.0, max: 50.0, rate: 80, tube: 'EDTA (Purple)' },
+  { id: 'cbc_mcv', code: 'MCV', name: 'Mean Corpuscular Volume (MCV)', dept: 'HAEMATOLOGY (CBC)', unit: 'fL', ref: '80.0 - 100.0', femaleRef: '', min: 80.0, max: 100.0, rate: 80, tube: 'EDTA (Purple)' },
+  { id: 'cbc_mch', code: 'MCH', name: 'Mean Corpuscular Hemoglobin (MCH)', dept: 'HAEMATOLOGY (CBC)', unit: 'pg', ref: '27.0 - 32.0', femaleRef: '', min: 27.0, max: 32.0, rate: 80, tube: 'EDTA (Purple)' },
+  { id: 'cbc_mchc', code: 'MCHC', name: 'MCHC', dept: 'HAEMATOLOGY (CBC)', unit: 'g/dL', ref: '31.5 - 35.5', femaleRef: '', min: 31.5, max: 35.5, rate: 80, tube: 'EDTA (Purple)' },
+  { id: 'cbc_rdw', code: 'RDW', name: 'RDW-CV', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '11.5 - 14.5', femaleRef: '', min: 11.5, max: 14.5, rate: 80, tube: 'EDTA (Purple)' },
+  { id: 'cbc_tlc', code: 'TLC', name: 'Total Leukocyte Count (TLC / WBC)', dept: 'HAEMATOLOGY (CBC)', unit: '/cumm', ref: '4000 - 11000', femaleRef: '', min: 4000, max: 11000, rate: 120, tube: 'EDTA (Purple)' },
+  { id: 'cbc_neut', code: 'NEUT', name: 'Neutrophils (DLC)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '40 - 70', femaleRef: '', min: 40, max: 70, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_lymph', code: 'LYMPH', name: 'Lymphocytes (DLC)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '20 - 40', femaleRef: '', min: 20, max: 40, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_mono', code: 'MONO', name: 'Monocytes (DLC)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '2 - 8', femaleRef: '', min: 2, max: 8, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_eos', code: 'EOS', name: 'Eosinophils (DLC)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '1 - 6', femaleRef: '', min: 1, max: 6, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_baso', code: 'BASO', name: 'Basophils (DLC)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '0 - 1', femaleRef: '', min: 0, max: 1, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_plt', code: 'PLT', name: 'Platelet Count', dept: 'HAEMATOLOGY (CBC)', unit: 'Lakhs/cumm', ref: '1.50 - 4.50', femaleRef: '', min: 1.5, max: 4.5, rate: 120, tube: 'EDTA (Purple)' },
+  { id: 'cbc_esr', code: 'ESR', name: 'Erythrocyte Sedimentation Rate (ESR)', dept: 'HAEMATOLOGY (CBC)', unit: 'mm/1st hr', ref: '0 - 15', femaleRef: '0 - 20', min: 0, max: 15, rate: 100, tube: 'EDTA (Purple)' },
+  { id: 'cbc_bg', code: 'BGRP', name: 'Blood Group & Rh Typing', dept: 'HAEMATOLOGY (CBC)', unit: 'Group', ref: 'ABO / Rh', femaleRef: '', min: null, max: null, rate: 100, tube: 'EDTA (Purple)' },
 
-  // BIOCHEMISTRY
-  { id: 't4', code: 'FBS', name: 'Blood Sugar Fasting (FBS)', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '70 - 100', femaleRef: '', min: 70, max: 100, rate: 80, tube: 'Fluoride (Grey)' },
-  { id: 't14', code: 'PPBS', name: 'Blood Sugar Post Prandial (PPBS)', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '70 - 140', femaleRef: '', min: 70, max: 140, rate: 80, tube: 'Fluoride (Grey)' },
-  { id: 't15', code: 'RBS', name: 'Blood Sugar Random (RBS)', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '70 - 140', femaleRef: '', min: 70, max: 140, rate: 80, tube: 'Fluoride (Grey)' },
-  { id: 't16', code: 'HBA1C', name: 'Glycosylated Hemoglobin (HbA1c)', dept: 'BIOCHEMISTRY', unit: '%', ref: '4.0 - 5.6', femaleRef: '', min: 4.0, max: 5.6, rate: 450, tube: 'EDTA (Purple)' },
-  { id: 't17', code: 'UREA', name: 'Blood Urea', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '15 - 40', femaleRef: '', min: 15, max: 40, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't5', code: 'CREAT', name: 'Serum Creatinine', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '0.7 - 1.3', femaleRef: '0.6 - 1.1', min: 0.7, max: 1.3, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't18', code: 'URIC', name: 'Serum Uric Acid', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '3.5 - 7.2', femaleRef: '2.6 - 6.0', min: 3.5, max: 7.2, rate: 160, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't19', code: 'BILT', name: 'Bilirubin Total', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '0.2 - 1.2', femaleRef: '', min: 0.2, max: 1.2, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't6', code: 'SGPT', name: 'SGPT (ALT)', dept: 'BIOCHEMISTRY', unit: 'U/L', ref: '5 - 40', femaleRef: '5 - 35', min: 5, max: 40, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't20', code: 'SGOT', name: 'SGOT (AST)', dept: 'BIOCHEMISTRY', unit: 'U/L', ref: '5 - 40', femaleRef: '5 - 35', min: 5, max: 40, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't21', code: 'ALP', name: 'Alkaline Phosphatase (ALP)', dept: 'BIOCHEMISTRY', unit: 'U/L', ref: '40 - 129', femaleRef: '35 - 104', min: 40, max: 129, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't22', code: 'CHOL', name: 'Total Cholesterol', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '125 - 200', femaleRef: '', min: 125, max: 200, rate: 160, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't23', code: 'TRIG', name: 'Serum Triglycerides', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '30 - 150', femaleRef: '', min: 30, max: 150, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't24', code: 'HDL', name: 'HDL Cholesterol', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '35 - 60', femaleRef: '40 - 65', min: 35, max: 60, rate: 200, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't25', code: 'CAL', name: 'Serum Calcium', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '8.5 - 10.5', femaleRef: '', min: 8.5, max: 10.5, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
+  // 2. LIVER FUNCTION TEST (LFT — Complete 11 Parameters)
+  { id: 'lft_bilt', code: 'BILT', name: 'Bilirubin Total', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'mg/dL', ref: '0.2 - 1.2', femaleRef: '', min: 0.2, max: 1.2, rate: 120, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_bild', code: 'BILD', name: 'Bilirubin Direct (Conjugated)', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'mg/dL', ref: '0.0 - 0.3', femaleRef: '', min: 0.0, max: 0.3, rate: 100, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_bili', code: 'BILI', name: 'Bilirubin Indirect (Unconjugated)', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'mg/dL', ref: '0.2 - 0.9', femaleRef: '', min: 0.2, max: 0.9, rate: 80, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_sgot', code: 'SGOT', name: 'SGOT (AST)', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'U/L', ref: '5 - 40', femaleRef: '5 - 35', min: 5, max: 40, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_sgpt', code: 'SGPT', name: 'SGPT (ALT)', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'U/L', ref: '5 - 40', femaleRef: '5 - 35', min: 5, max: 40, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_alp', code: 'ALP', name: 'Alkaline Phosphatase (ALP)', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'U/L', ref: '40 - 129', femaleRef: '35 - 104', min: 40, max: 129, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_ggt', code: 'GGT', name: 'Gamma Glutamyl Transferase (GGT)', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'U/L', ref: '10 - 60', femaleRef: '7 - 40', min: 10, max: 60, rate: 200, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_tp', code: 'TPROT', name: 'Total Protein', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'g/dL', ref: '6.4 - 8.3', femaleRef: '', min: 6.4, max: 8.3, rate: 120, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_alb', code: 'ALB', name: 'Serum Albumin', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'g/dL', ref: '3.5 - 5.2', femaleRef: '', min: 3.5, max: 5.2, rate: 120, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_glob', code: 'GLOB', name: 'Serum Globulin', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'g/dL', ref: '2.0 - 3.5', femaleRef: '', min: 2.0, max: 3.5, rate: 80, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lft_ag', code: 'AGRAT', name: 'Albumin / Globulin (A:G) Ratio', dept: 'LIVER FUNCTION TEST (LFT)', unit: 'Ratio', ref: '1.1 - 2.2', femaleRef: '', min: 1.1, max: 2.2, rate: 60, tube: 'SST / Plain (Red/Yellow)' },
 
-  // IMMUNOASSAY
-  { id: 't26', code: 'TSH', name: 'Thyroid Stimulating Hormone (TSH)', dept: 'IMMUNOASSAY', unit: 'uIU/mL', ref: '0.4 - 4.5', femaleRef: '', min: 0.4, max: 4.5, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't27', code: 'T3', name: 'Total Triiodothyronine (T3)', dept: 'IMMUNOASSAY', unit: 'ng/dL', ref: '80 - 200', femaleRef: '', min: 80, max: 200, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't28', code: 'T4', name: 'Total Thyroxine (T4)', dept: 'IMMUNOASSAY', unit: 'ug/dL', ref: '5.1 - 14.1', femaleRef: '', min: 5.1, max: 14.1, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't29', code: 'VITD', name: 'Vitamin D (25-OH)', dept: 'IMMUNOASSAY', unit: 'ng/mL', ref: '30 - 100', femaleRef: '', min: 30, max: 100, rate: 800, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't30', code: 'B12', name: 'Vitamin B12', dept: 'IMMUNOASSAY', unit: 'pg/mL', ref: '211 - 911', femaleRef: '', min: 211, max: 911, rate: 650, tube: 'SST / Plain (Red/Yellow)' },
+  // 3. KIDNEY FUNCTION TEST (KFT / RFT — Complete 9 Parameters)
+  { id: 'kft_urea', code: 'UREA', name: 'Blood Urea', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mg/dL', ref: '15.0 - 40.0', femaleRef: '', min: 15.0, max: 40.0, rate: 140, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_bun', code: 'BUN', name: 'Blood Urea Nitrogen (BUN)', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mg/dL', ref: '7.0 - 20.0', femaleRef: '', min: 7.0, max: 20.0, rate: 100, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_creat', code: 'CREAT', name: 'Serum Creatinine', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mg/dL', ref: '0.7 - 1.3', femaleRef: '0.6 - 1.1', min: 0.7, max: 1.3, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_uric', code: 'URIC', name: 'Serum Uric Acid', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mg/dL', ref: '3.5 - 7.2', femaleRef: '2.6 - 6.0', min: 3.5, max: 7.2, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_na', code: 'SOD', name: 'Serum Sodium (Na+)', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mmol/L', ref: '135 - 145', femaleRef: '', min: 135, max: 145, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_k', code: 'POT', name: 'Serum Potassium (K+)', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mmol/L', ref: '3.5 - 5.1', femaleRef: '', min: 3.5, max: 5.1, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_cl', code: 'CHL', name: 'Serum Chloride (Cl-)', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mmol/L', ref: '98 - 107', femaleRef: '', min: 98, max: 107, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_cal', code: 'CAL', name: 'Serum Calcium', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mg/dL', ref: '8.5 - 10.5', femaleRef: '', min: 8.5, max: 10.5, rate: 160, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'kft_phos', code: 'PHOS', name: 'Serum Phosphorus', dept: 'KIDNEY FUNCTION TEST (KFT)', unit: 'mg/dL', ref: '2.5 - 4.5', femaleRef: '', min: 2.5, max: 4.5, rate: 160, tube: 'SST / Plain (Red/Yellow)' },
 
-  // SEROLOGY
-  { id: 't31', code: 'CRP', name: 'C-Reactive Protein (CRP)', dept: 'SEROLOGY', unit: 'mg/L', ref: '0 - 6.0', femaleRef: '', min: 0, max: 6.0, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't32', code: 'RA', name: 'Rheumatoid Factor (RA)', dept: 'SEROLOGY', unit: 'IU/mL', ref: '0 - 20', femaleRef: '', min: 0, max: 20, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't33', code: 'ASO', name: 'ASO Titre', dept: 'SEROLOGY', unit: 'IU/mL', ref: '0 - 200', femaleRef: '', min: 0, max: 200, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't34', code: 'WIDAL', name: 'Widal Slide Agglutination', dept: 'SEROLOGY', unit: 'Titre', ref: '< 1:80', femaleRef: '', min: null, max: null, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't35', code: 'HBSAG', name: 'HBsAg Card / Rapid', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 200, tube: 'SST / Plain (Red/Yellow)' },
-  { id: 't36', code: 'HCV', name: 'Anti-HCV Rapid', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+  // 4. LIPID PROFILE (Complete 7 Parameters)
+  { id: 'lip_chol', code: 'CHOL', name: 'Total Cholesterol', dept: 'LIPID PROFILE', unit: 'mg/dL', ref: '125 - 200', femaleRef: '', min: 125, max: 200, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lip_trig', code: 'TRIG', name: 'Serum Triglycerides', dept: 'LIPID PROFILE', unit: 'mg/dL', ref: '30 - 150', femaleRef: '', min: 30, max: 150, rate: 160, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lip_hdl', code: 'HDL', name: 'HDL Cholesterol (Direct)', dept: 'LIPID PROFILE', unit: 'mg/dL', ref: '35 - 60', femaleRef: '40 - 65', min: 35, max: 60, rate: 180, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lip_ldl', code: 'LDL', name: 'LDL Cholesterol', dept: 'LIPID PROFILE', unit: 'mg/dL', ref: '< 100', femaleRef: '', min: 0, max: 100, rate: 160, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lip_vldl', code: 'VLDL', name: 'VLDL Cholesterol', dept: 'LIPID PROFILE', unit: 'mg/dL', ref: '6 - 30', femaleRef: '', min: 6, max: 30, rate: 80, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lip_nonhdl', code: 'NHDL', name: 'Non-HDL Cholesterol', dept: 'LIPID PROFILE', unit: 'mg/dL', ref: '< 130', femaleRef: '', min: 0, max: 130, rate: 60, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'lip_ratio', code: 'CH_HD', name: 'Total Cholesterol / HDL Ratio', dept: 'LIPID PROFILE', unit: 'Ratio', ref: '3.0 - 5.0', femaleRef: '', min: 3.0, max: 5.0, rate: 60, tube: 'SST / Plain (Red/Yellow)' },
 
-  // CLINICAL PATHOLOGY
-  { id: 't37', code: 'URINE_R', name: 'Urine Routine & Microscopic', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'Pus cells 0 - 5, RBC 0 - 2', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' },
-  { id: 't38', code: 'STOOL_R', name: 'Stool Routine & Microscopic', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'No ova / cysts seen', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' }
+  // 5. BIOCHEMISTRY (Diabetes & Cardiac/Pancreatic)
+  { id: 'bio_fbs', code: 'FBS', name: 'Blood Sugar Fasting (FBS)', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '70 - 100', femaleRef: '', min: 70, max: 100, rate: 80, tube: 'Fluoride (Grey)' },
+  { id: 'bio_ppbs', code: 'PPBS', name: 'Blood Sugar Post Prandial (PPBS)', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '70 - 140', femaleRef: '', min: 70, max: 140, rate: 80, tube: 'Fluoride (Grey)' },
+  { id: 'bio_rbs', code: 'RBS', name: 'Blood Sugar Random (RBS)', dept: 'BIOCHEMISTRY', unit: 'mg/dL', ref: '70 - 140', femaleRef: '', min: 70, max: 140, rate: 80, tube: 'Fluoride (Grey)' },
+  { id: 'bio_hba1c', code: 'HBA1C', name: 'Glycosylated Hemoglobin (HbA1c)', dept: 'BIOCHEMISTRY', unit: '%', ref: '4.0 - 5.6', femaleRef: '', min: 4.0, max: 5.6, rate: 450, tube: 'EDTA (Purple)' },
+  { id: 'bio_amy', code: 'AMYL', name: 'Serum Amylase', dept: 'BIOCHEMISTRY', unit: 'U/L', ref: '28 - 100', femaleRef: '', min: 28, max: 100, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'bio_lipa', code: 'LIPA', name: 'Serum Lipase', dept: 'BIOCHEMISTRY', unit: 'U/L', ref: '13 - 60', femaleRef: '', min: 13, max: 60, rate: 350, tube: 'SST / Plain (Red/Yellow)' },
+
+  // 6. THYROID & IMMUNOASSAY
+  { id: 'imm_t3', code: 'T3', name: 'Total Triiodothyronine (T3)', dept: 'THYROID & IMMUNOASSAY', unit: 'ng/dL', ref: '80 - 200', femaleRef: '', min: 80, max: 200, rate: 200, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_t4', code: 'T4', name: 'Total Thyroxine (T4)', dept: 'THYROID & IMMUNOASSAY', unit: 'ug/dL', ref: '5.1 - 14.1', femaleRef: '', min: 5.1, max: 14.1, rate: 200, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_tsh', code: 'TSH', name: 'Thyroid Stimulating Hormone (TSH)', dept: 'THYROID & IMMUNOASSAY', unit: 'uIU/mL', ref: '0.4 - 4.5', femaleRef: '', min: 0.4, max: 4.5, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_ft3', code: 'FT3', name: 'Free T3 (FT3)', dept: 'THYROID & IMMUNOASSAY', unit: 'pg/mL', ref: '2.0 - 4.4', femaleRef: '', min: 2.0, max: 4.4, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_ft4', code: 'FT4', name: 'Free T4 (FT4)', dept: 'THYROID & IMMUNOASSAY', unit: 'ng/dL', ref: '0.9 - 1.7', femaleRef: '', min: 0.9, max: 1.7, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_vitd', code: 'VITD', name: 'Vitamin D (25-OH)', dept: 'THYROID & IMMUNOASSAY', unit: 'ng/mL', ref: '30 - 100', femaleRef: '', min: 30, max: 100, rate: 800, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_b12', code: 'B12', name: 'Vitamin B12', dept: 'THYROID & IMMUNOASSAY', unit: 'pg/mL', ref: '211 - 911', femaleRef: '', min: 211, max: 911, rate: 650, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'imm_ferr', code: 'FERR', name: 'Serum Ferritin', dept: 'THYROID & IMMUNOASSAY', unit: 'ng/mL', ref: '24 - 336', femaleRef: '11 - 307', min: 24, max: 336, rate: 550, tube: 'SST / Plain (Red/Yellow)' },
+
+  // 7. SEROLOGY
+  { id: 'ser_crp', code: 'CRP', name: 'C-Reactive Protein (CRP)', dept: 'SEROLOGY', unit: 'mg/L', ref: '0 - 6.0', femaleRef: '', min: 0, max: 6.0, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_ra', code: 'RA', name: 'Rheumatoid Factor (RA)', dept: 'SEROLOGY', unit: 'IU/mL', ref: '0 - 20', femaleRef: '', min: 0, max: 20, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_aso', code: 'ASO', name: 'ASO Titre', dept: 'SEROLOGY', unit: 'IU/mL', ref: '0 - 200', femaleRef: '', min: 0, max: 200, rate: 250, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_widal', code: 'WIDAL', name: 'Widal Slide Agglutination', dept: 'SEROLOGY', unit: 'Titre', ref: '< 1:80', femaleRef: '', min: null, max: null, rate: 150, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_typhi', code: 'TYPHI', name: 'Typhidot IgM / IgG', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Negative', femaleRef: '', min: null, max: null, rate: 350, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_dengue', code: 'DENG', name: 'Dengue NS1 Antigen & IgM/IgG', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Negative', femaleRef: '', min: null, max: null, rate: 600, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_mp', code: 'MP', name: 'Malaria Parasite (MP Card / Smear)', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Negative', femaleRef: '', min: null, max: null, rate: 200, tube: 'EDTA (Purple)' },
+  { id: 'ser_hbsag', code: 'HBSAG', name: 'HBsAg Card / Rapid', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 200, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_hcv', code: 'HCV', name: 'Anti-HCV Rapid', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'ser_hiv', code: 'HIV', name: 'HIV 1 & 2 Antibody Screening', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+
+  // 8. CLINICAL PATHOLOGY
+  { id: 'cp_urine', code: 'URINE_R', name: 'Urine Routine & Microscopic', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'Pus cells 0 - 5, RBC 0 - 2', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' },
+  { id: 'cp_stool', code: 'STOOL_R', name: 'Stool Routine & Microscopic', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'No ova / cysts seen', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' },
+  { id: 'cp_upt', code: 'UPT', name: 'Urine Pregnancy Test (UPT)', dept: 'CLINICAL PATHOLOGY', unit: 'Qualitative', ref: 'Negative', femaleRef: '', min: null, max: null, rate: 100, tube: 'Urine / Stool Container' }
 ];
 
 const DEFAULT_PROFILES = [
-  { id: 'p1', name: 'Basic CBC Panel', rate: 300, testIds: ['t1', 't2', 't3'] },
-  { id: 'p2', name: 'Liver & Kidney Basic', rate: 450, testIds: ['t19', 't6', 't20', 't21', 't17', 't5'] }
+  {
+    id: 'prof_cbc',
+    name: 'Complete Blood Count (CBC - 14 Tests)',
+    rate: 300,
+    testIds: ['cbc_hb', 'cbc_rbc', 'cbc_pcv', 'cbc_mcv', 'cbc_mch', 'cbc_mchc', 'cbc_rdw', 'cbc_tlc', 'cbc_neut', 'cbc_lymph', 'cbc_mono', 'cbc_eos', 'cbc_baso', 'cbc_plt']
+  },
+  {
+    id: 'prof_lft',
+    name: 'Liver Function Test (LFT - 11 Tests)',
+    rate: 550,
+    testIds: ['lft_bilt', 'lft_bild', 'lft_bili', 'lft_sgot', 'lft_sgpt', 'lft_alp', 'lft_ggt', 'lft_tp', 'lft_alb', 'lft_glob', 'lft_ag']
+  },
+  {
+    id: 'prof_kft',
+    name: 'Kidney Function Test (KFT - 9 Tests)',
+    rate: 600,
+    testIds: ['kft_urea', 'kft_bun', 'kft_creat', 'kft_uric', 'kft_na', 'kft_k', 'kft_cl', 'kft_cal', 'kft_phos']
+  },
+  {
+    id: 'prof_lipid',
+    name: 'Complete Lipid Profile (7 Tests)',
+    rate: 550,
+    testIds: ['lip_chol', 'lip_trig', 'lip_hdl', 'lip_ldl', 'lip_vldl', 'lip_nonhdl', 'lip_ratio']
+  },
+  {
+    id: 'prof_thyroid',
+    name: 'Thyroid Profile Total (T3, T4, TSH)',
+    rate: 500,
+    testIds: ['imm_t3', 'imm_t4', 'imm_tsh']
+  },
+  {
+    id: 'prof_fever',
+    name: 'Complete Fever Panel (CBC + MP + Widal + CRP)',
+    rate: 750,
+    testIds: ['cbc_hb', 'cbc_tlc', 'cbc_plt', 'ser_mp', 'ser_widal', 'ser_crp']
+  }
 ];
 
 const SAMPLE_PATIENTS = [
@@ -1325,22 +1278,22 @@ const SAMPLE_PATIENTS = [
     gender: 'Male',
     refBy: 'Dr. A. Verma',
     centreCode: 'MAIN',
-    total: 400,
+    total: 300,
     discount: 0,
-    net: 400,
-    paid: 400,
+    net: 300,
+    paid: 300,
     due: 0,
     payMode: 'Cash',
     status: 'Verified',
     sampleIssue: 'OK',
     remarks: 'Sample processed on calibrated analyzer.',
     deptComments: {
-      'HAEMATOLOGY': DEFAULT_DEPT_COMMENTS['HAEMATOLOGY']
+      'HAEMATOLOGY (CBC)': DEFAULT_DEPT_COMMENTS['HAEMATOLOGY (CBC)']
     },
     items: [
-      { testId: 't1', code: 'HB', name: 'Hemoglobin (Hb)', dept: 'HAEMATOLOGY', unit: 'g/dL', ref: '13.0 - 17.0', femaleRef: '12.0 - 15.0', min: 13.0, max: 17.0, value: '14.6', flag: '' },
-      { testId: 't2', code: 'TLC', name: 'Total Leukocyte Count (TLC)', dept: 'HAEMATOLOGY', unit: '/cumm', ref: '4000 - 11000', femaleRef: '', min: 4000, max: 11000, value: '7600', flag: '' },
-      { testId: 't3', code: 'PLT', name: 'Platelet Count', dept: 'HAEMATOLOGY', unit: 'Lakhs/cumm', ref: '1.50 - 4.50', femaleRef: '', min: 1.5, max: 4.5, value: '2.45', flag: '' }
+      { testId: 'cbc_hb', code: 'HB', name: 'Hemoglobin (Hb)', dept: 'HAEMATOLOGY (CBC)', unit: 'g/dL', ref: '13.0 - 17.0', femaleRef: '12.0 - 15.0', min: 13.0, max: 17.0, value: '14.6', flag: '' },
+      { testId: 'cbc_tlc', code: 'TLC', name: 'Total Leukocyte Count (TLC / WBC)', dept: 'HAEMATOLOGY (CBC)', unit: '/cumm', ref: '4000 - 11000', femaleRef: '', min: 4000, max: 11000, value: '7600', flag: '' },
+      { testId: 'cbc_plt', code: 'PLT', name: 'Platelet Count', dept: 'HAEMATOLOGY (CBC)', unit: 'Lakhs/cumm', ref: '1.50 - 4.50', femaleRef: '', min: 1.5, max: 4.5, value: '2.45', flag: '' }
     ]
   }
 ];
@@ -1352,7 +1305,7 @@ let state = {
     labAddr: '391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.)',
     labPhone: '9548593164',
     nablNo: '',
-    headerStyle: 'unique_studio',
+    headerStyle: 'banner',
     watermark: true,
     deptPageBreak: true,
     reportPageUrl: DEFAULT_REPORT_PAGE_URL,
@@ -1409,6 +1362,29 @@ function getDeptComment(patient, dept) {
   return DEFAULT_DEPT_COMMENTS[dept] || '';
 }
 
+function mergeDefaultCatalogIntoState() {
+  const existingCodes = new Set(state.tests.map(t => (t.code || '').toUpperCase()));
+  DEFAULT_TESTS.forEach(dt => {
+    if (!existingCodes.has(dt.code.toUpperCase())) {
+      state.tests.push(Object.assign({}, dt));
+    }
+  });
+  const existingProfNames = new Set(state.profiles.map(p => p.name.toLowerCase()));
+  DEFAULT_PROFILES.forEach(dp => {
+    if (!existingProfNames.has(dp.name.toLowerCase())) {
+      state.profiles.push(Object.assign({}, dp));
+    }
+  });
+  state.deptComments = Object.assign({}, DEFAULT_DEPT_COMMENTS, state.deptComments || {});
+}
+
+function restoreDefaultCatalog() {
+  if (isPccRole()) return;
+  mergeDefaultCatalogIntoState();
+  saveState();
+  alert('Complete CBC, LFT, KFT, Lipid, Thyroid & Serology panels loaded!');
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -1418,16 +1394,15 @@ function loadState() {
       if (!state.settings.reportPageUrl || state.settings.reportPageUrl.indexOf('googleusercontent') !== -1 || state.settings.reportPageUrl.indexOf('subhamkumar01520-web') !== -1) {
         state.settings.reportPageUrl = DEFAULT_REPORT_PAGE_URL;
       }
+      if (state.settings.headerStyle !== 'blank') {
+        state.settings.headerStyle = 'banner';
+      }
       if (state.settings.deptPageBreak === undefined) {
         state.settings.deptPageBreak = true;
       }
       if (Array.isArray(parsed.centres)) state.centres = parsed.centres;
       if (Array.isArray(parsed.tests) && parsed.tests.length) {
-        const defaultMap = new Map(DEFAULT_TESTS.map(dt => [dt.id, dt]));
-        state.tests = parsed.tests.map(t => {
-          const def = defaultMap.get(t.id);
-          return Object.assign({ femaleRef: '', code: (def && def.code) || (t.id || '').toUpperCase() }, t);
-        });
+        state.tests = parsed.tests.map(t => Object.assign({ femaleRef: '', code: (t.code || t.id || '').toUpperCase() }, t));
       }
       if (Array.isArray(parsed.profiles)) state.profiles = parsed.profiles;
       if (parsed.deptComments && typeof parsed.deptComments === 'object') {
@@ -1437,6 +1412,8 @@ function loadState() {
         state.patients = parsed.patients.map(p => Object.assign({ sampleIssue: 'OK', remarks: '', deptComments: {} }, p));
       }
     }
+    // Automatically ensure all complete CBC, LFT, KFT & Lipid parameters exist
+    mergeDefaultCatalogIntoState();
   } catch (e) { console.error(e); }
 }
 
@@ -1559,7 +1536,7 @@ function getLogoSvgMarkup(preset, sizePx) {
       <line x1="23" y1="50" x2="41" y2="50" stroke="${s}" stroke-width="3"/>
     </svg>`;
   }
-  return `<span style="font-weight:900;font-size:${Math.round(sizePx * 0.72)}px;line-height:1;"><span style="color:${p}">S</span><span style="color:${s}">P</span></span>`;
+  return `<span style="font-weight:900;font-size:${Math.round(sizePx * 0.42)}px;line-height:1;color:${p};letter-spacing:.3px;">SPL</span>`;
 }
 
 function renderRemarkPresetChips() {
@@ -1622,6 +1599,8 @@ function applyRoleRestrictions() {
   document.getElementById('btnBackup').style.display = pcc ? 'none' : '';
   document.getElementById('btnCloudRole').style.display = pcc ? 'none' : '';
   document.getElementById('btnExportCsv').style.display = pcc ? 'none' : '';
+  const btnManageWl = document.getElementById('btnManageCentresWl');
+  if (btnManageWl) btnManageWl.style.display = pcc ? 'none' : '';
   document.getElementById('btnExitCcMode').style.display = pcc ? '' : 'none';
 
   const bkCentreInput = document.getElementById('bkCentre');
@@ -1653,7 +1632,8 @@ function applyThemeAndHeaders() {
   document.getElementById('centreBadge').textContent = state.settings.centreCode || 'MAIN';
   document.getElementById('cloudStatusTag').textContent = state.settings.cloudUrl ? 'Online' : 'Offline';
   document.getElementById('bkCentre').value = state.settings.centreCode || 'MAIN';
-  document.getElementById('prevLetterheadSelect').value = state.settings.headerStyle || 'unique_studio';
+  const lhMode = (state.settings.headerStyle === 'blank' ? 'blank' : 'banner');
+  document.getElementById('prevLetterheadSelect').value = lhMode;
   document.getElementById('prevLogoPresetSelect').value = state.settings.logoPreset || (state.settings.logoData ? 'custom' : 'sp_text');
   document.getElementById('prevPrimaryColor').value = pCol;
   document.getElementById('prevSecondaryColor').value = sCol;
@@ -1675,7 +1655,7 @@ function applyThemeAndHeaders() {
   document.getElementById('cfgLabAddr').value = state.settings.labAddr || '';
   document.getElementById('cfgLabPhone').value = state.settings.labPhone || '';
   document.getElementById('cfgNabl').value = state.settings.nablNo || '';
-  document.getElementById('cfgHeaderStyle').value = state.settings.headerStyle || 'unique_studio';
+  document.getElementById('cfgHeaderStyle').value = lhMode;
   document.getElementById('cfgReportPageUrl').value = getCleanReportPageBase();
   document.getElementById('cfgPrimaryColor').value = pCol;
   document.getElementById('cfgSecondaryColor').value = sCol;
@@ -1721,7 +1701,7 @@ function changeLetterheadStyle(val) {
 
 function changeLogoPreset(val) {
   if (val === 'custom' && !state.settings.logoData) {
-    alert('Pehle Branding modal mein apna logo upload karein, ya SP Monogram / Microscope / DNA chunein.');
+    alert('Pehle Branding modal mein apna logo upload karein, ya SPL Badge / Microscope / DNA chunein.');
     document.getElementById('prevLogoPresetSelect').value = state.settings.logoPreset || 'sp_text';
     return;
   }
@@ -1813,10 +1793,13 @@ function buildCentreLink(c) {
 function copyCentreLink(code) {
   const c = state.centres.find(x => x.code === code);
   if (!c) return;
+  if (!state.settings.cloudUrl) {
+    alert('Note: Abhi Google Apps Script Cloud URL set nahi hai. Doosre phone/PC se entry Main Lab mein lane ke liye neeche Google Apps Script Web App URL zaroor save karein.');
+  }
   const url = buildCentreLink(c);
   const txt = `Collection Centre: ${c.name} (${c.code})\nAccess Code: ${c.pin}\nLink: ${url}`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(() => alert('Centre Link & Code copied!'));
+    navigator.clipboard.writeText(txt).then(() => alert('Centre Link & Access Code copied!'));
   } else {
     prompt('Copy link & code:', txt);
   }
@@ -1887,10 +1870,9 @@ function retryCentreCodePrompt() {
     state.settings.centreCode = ccParam;
     pendingCentreUnlock = null;
     document.body.classList.remove('cc-locked');
-    document.body.classList.remove('cc-locked');
-  document.getElementById('ccLockOverlay').classList.remove('open');
+    document.getElementById('ccLockOverlay').classList.remove('open');
     saveState();
-    if (state.settings.cloudUrl) syncCloudNow();
+    if (state.settings.cloudUrl) syncCloudNow(true);
   } else {
     alert('Galat Access Code!');
     if (inpEl) inpEl.focus();
@@ -1906,6 +1888,7 @@ function exitCollectionCentreToAdmin() {
   state.settings.role = 'ADMIN';
   state.settings.centreCode = 'MAIN';
   pendingCentreUnlock = null;
+  document.body.classList.remove('cc-locked');
   document.getElementById('ccLockOverlay').classList.remove('open');
   saveState();
   if (window.location.search) {
@@ -2000,7 +1983,7 @@ function renderSelectedSummary(overrideTotal) {
   };
   const tubeBox = document.getElementById('tubeGuideBox');
   if (tubes.size === 0) {
-    tubeBox.innerHTML = '<small style="color:#64748b;">Select tests to view required vacutainer tubes.</small>';
+    tubeBox.innerHTML = '<small style="color:#64748b;">Select tests or a complete panel (CBC, LFT, KFT, Lipid) to view required tubes.</small>';
   } else {
     tubeBox.innerHTML = Array.from(tubes).map(tb =>
       `<span class="tube-pill"><span class="tube-dot" style="background:${tubeColors[tb] || '#0f172a'}"></span>${tb}</span>`
@@ -2034,14 +2017,20 @@ function resetBookingForm() {
   renderSelectedSummary();
 }
 
-function saveBooking() {
+async function saveBooking() {
   const name = document.getElementById('bkName').value.trim();
   const age = document.getElementById('bkAge').value.trim();
   if (!name || !age || selectedTestIds.length === 0) {
     return alert('Please enter Patient Name, Age, and select at least 1 test.');
   }
+  const centreVal = (isPccRole()
+    ? (state.settings.centreCode || 'MAIN')
+    : (document.getElementById('bkCentre').value.trim() || 'MAIN')).toUpperCase();
+
   const seq = String(state.patients.length + 1).padStart(3, '0');
-  const labId = 'SPL-' + new Date().getFullYear() + '-' + seq;
+  const randSuffix = String(Math.floor(10 + Math.random() * 89));
+  const labId = (centreVal !== 'MAIN' ? `${centreVal}-` : 'SPL-') + new Date().getFullYear() + '-' + seq + randSuffix;
+
   const sampleIssue = document.getElementById('bkSampleIssue').value || 'OK';
   const remarks = document.getElementById('bkRemarks').value.trim();
   const gender = document.getElementById('bkGender').value;
@@ -2066,12 +2055,8 @@ function saveBooking() {
     };
   });
 
-  const centreVal = isPccRole()
-    ? (state.settings.centreCode || 'MAIN')
-    : (document.getElementById('bkCentre').value.trim() || 'MAIN');
-
   const rec = {
-    id: 'rec_' + Date.now(),
+    id: 'rec_' + centreVal + '_' + Date.now(),
     labId,
     date: document.getElementById('bkDate').value || new Date().toISOString().slice(0, 10),
     mobile: document.getElementById('bkMobile').value.trim(),
@@ -2096,9 +2081,16 @@ function saveBooking() {
   state.patients.push(rec);
   activeReportPatientId = rec.id;
   saveState();
-  pushRecordToCloud(rec);
   resetBookingForm();
-  alert('Booking Saved! Lab ID: ' + labId);
+
+  if (state.settings.cloudUrl) {
+    const synced = await pushRecordToCloud(rec);
+    alert(synced
+      ? `Booking Saved & Synced to Main Lab! Lab ID: ${labId}`
+      : `Booking Saved Locally (Lab ID: ${labId}). Cloud Sync check karein.`);
+  } else {
+    alert(`Booking Saved! Lab ID: ${labId}\n(Note: Alag phone/PC se Main Lab mein bhejne ke liye Google Cloud Sync URL set karein.)`);
+  }
 }
 
 function renderPendingQueue() {
@@ -2144,7 +2136,7 @@ function jumpToPreview(pid) {
 function populatePatientDropdowns() {
   const scoped = getScopedPatients();
   const opts = scoped.slice().reverse().map(p =>
-    `<option value="${p.id}">${p.labId} — ${p.name}</option>`
+    `<option value="${p.id}">${p.labId} — ${p.name} (${p.centreCode || 'MAIN'})</option>`
   ).join('');
   document.getElementById('resPatientSelect').innerHTML = '<option value="">-- Select Patient --</option>' + opts;
   document.getElementById('prevPatientSelect').innerHTML = '<option value="">-- Select Patient --</option>' + opts;
@@ -2269,25 +2261,86 @@ function loadResultEditor(pid) {
   `;
 }
 
+function autoCalculateDerivedPanels(p) {
+  const byCode = {};
+  p.items.forEach((it, idx) => {
+    const c = (it.code || '').toUpperCase();
+    const val = parseFloat(document.getElementById('resVal_' + idx).value.trim());
+    byCode[c] = { it, idx, val };
+  });
+
+  // LFT auto-calculations: Indirect Bilirubin = Total - Direct; Globulin = Total Protein - Albumin; A:G = Albumin / Globulin
+  if (byCode.BILT && !isNaN(byCode.BILT.val) && byCode.BILD && !isNaN(byCode.BILD.val) && byCode.BILI) {
+    const inp = document.getElementById('resVal_' + byCode.BILI.idx);
+    if (inp && !inp.value.trim()) inp.value = Math.max(0, byCode.BILT.val - byCode.BILD.val).toFixed(2);
+  }
+  if (byCode.TPROT && !isNaN(byCode.TPROT.val) && byCode.ALB && !isNaN(byCode.ALB.val) && byCode.GLOB) {
+    const globVal = Math.max(0.1, byCode.TPROT.val - byCode.ALB.val);
+    const inpG = document.getElementById('resVal_' + byCode.GLOB.idx);
+    if (inpG && !inpG.value.trim()) inpG.value = globVal.toFixed(2);
+    if (byCode.AGRAT) {
+      const inpAG = document.getElementById('resVal_' + byCode.AGRAT.idx);
+      if (inpAG && !inpAG.value.trim()) inpAG.value = (byCode.ALB.val / globVal).toFixed(2);
+    }
+  }
+
+  // KFT auto-calculation: BUN = Urea / 2.14
+  if (byCode.UREA && !isNaN(byCode.UREA.val) && byCode.BUN) {
+    const inpB = document.getElementById('resVal_' + byCode.BUN.idx);
+    if (inpB && !inpB.value.trim()) inpB.value = (byCode.UREA.val / 2.14).toFixed(1);
+  }
+
+  // Lipid auto-calculations: VLDL = Triglycerides / 5; LDL = Total Chol - HDL - VLDL; Non-HDL = Total Chol - HDL; Ratio = Total Chol / HDL
+  if (byCode.CHOL && !isNaN(byCode.CHOL.val) && byCode.HDL && !isNaN(byCode.HDL.val)) {
+    if (byCode.NHDL) {
+      const inpN = document.getElementById('resVal_' + byCode.NHDL.idx);
+      if (inpN && !inpN.value.trim()) inpN.value = Math.max(0, byCode.CHOL.val - byCode.HDL.val).toFixed(1);
+    }
+    if (byCode.CH_HD && byCode.HDL.val > 0) {
+      const inpR = document.getElementById('resVal_' + byCode.CH_HD.idx);
+      if (inpR && !inpR.value.trim()) inpR.value = (byCode.CHOL.val / byCode.HDL.val).toFixed(2);
+    }
+    if (byCode.TRIG && !isNaN(byCode.TRIG.val)) {
+      const vldlVal = byCode.TRIG.val / 5;
+      if (byCode.VLDL) {
+        const inpV = document.getElementById('resVal_' + byCode.VLDL.idx);
+        if (inpV && !inpV.value.trim()) inpV.value = vldlVal.toFixed(1);
+      }
+      if (byCode.LDL) {
+        const inpL = document.getElementById('resVal_' + byCode.LDL.idx);
+        if (inpL && !inpL.value.trim()) inpL.value = Math.max(0, byCode.CHOL.val - byCode.HDL.val - vldlVal).toFixed(1);
+      }
+    }
+  }
+}
+
 function autoFlagInput(idx, pid) {
   const p = state.patients.find(x => x.id === pid);
   if (!p) return;
-  const it = p.items[idx];
-  const num = parseFloat(document.getElementById('resVal_' + idx).value.trim());
-  let flag = '';
-  if (!isNaN(num)) {
-    if (it.min !== null && it.min !== '' && num < Number(it.min)) flag = 'L';
-    else if (it.max !== null && it.max !== '' && num > Number(it.max)) flag = 'H';
-  }
-  document.getElementById('resFlagCell_' + idx).innerHTML = flag
-    ? `<span class="badge ${flag === 'H' ? 'bg-high' : 'bg-low'}">${flag === 'H' ? 'HIGH' : 'LOW'}</span>`
-    : 'Normal';
+  autoCalculateDerivedPanels(p);
+  p.items.forEach((it, i) => {
+    const el = document.getElementById('resVal_' + i);
+    if (!el) return;
+    const num = parseFloat(el.value.trim());
+    let flag = '';
+    if (!isNaN(num)) {
+      if (it.min !== null && it.min !== '' && num < Number(it.min)) flag = 'L';
+      else if (it.max !== null && it.max !== '' && num > Number(it.max)) flag = 'H';
+    }
+    const cell = document.getElementById('resFlagCell_' + i);
+    if (cell) {
+      cell.innerHTML = flag
+        ? `<span class="badge ${flag === 'H' ? 'bg-high' : 'bg-low'}">${flag === 'H' ? 'HIGH' : 'LOW'}</span>`
+        : 'Normal';
+    }
+  });
 }
 
 function saveResults(pid, verify) {
   if (isPccRole()) return;
   const p = state.patients.find(x => x.id === pid);
   if (!p) return;
+  autoCalculateDerivedPanels(p);
   p.items.forEach((it, idx) => {
     const val = document.getElementById('resVal_' + idx).value.trim();
     it.value = val;
@@ -2400,101 +2453,48 @@ function renderReportPreview(pid) {
   wm.textContent = state.settings.labName || 'SMART PATHOLOGY LAB';
   wm.style.display = state.settings.watermark !== false ? 'flex' : 'none';
 
-  const styleMode = state.settings.headerStyle || 'unique_studio';
-  const swBox = document.getElementById('repSwLetterhead');
+  const styleMode = (state.settings.headerStyle === 'blank' ? 'blank' : 'banner');
   const banner = document.getElementById('repBannerBox');
   const labName = state.settings.labName || 'SMART PATHOLOGY LAB';
   const fullAddr = (state.settings.labAddr || '') + (state.settings.labPhone ? ' • Mob.: ' + state.settings.labPhone : '');
   const preset = state.settings.logoPreset || (state.settings.logoData ? 'custom' : 'sp_text');
+  const pCol = state.settings.primaryColor || '#151e73';
+  const sCol = state.settings.secondaryColor || '#0b6b5c';
 
-  const usBox = document.getElementById('repUniqueStudio');
-  const reBox = document.getElementById('repRoyalExec');
-  usBox.style.display = 'none';
-  reBox.style.display = 'none';
+  banner.style.display = styleMode === 'blank' ? 'none' : 'flex';
+  banner.className = 'rep-banner ' + styleMode;
+  banner.style.background = `linear-gradient(135deg, ${pCol}, ${sCol})`;
+  banner.style.color = '#ffffff';
+  document.getElementById('repLabTitle').textContent = labName;
+  document.getElementById('repLabTag').textContent = state.settings.labTag || '';
+  document.getElementById('repLabAddr').textContent = fullAddr;
 
-  if (styleMode === 'unique_studio') {
-    usBox.style.display = 'block';
-    swBox.style.display = 'none';
-    banner.style.display = 'none';
-    document.getElementById('usLabTitle').textContent = labName;
-    document.getElementById('usLabTag').textContent = state.settings.labTag || 'Accurate • Caring • Instant Diagnostic Services';
-    document.getElementById('usAddrText').textContent = state.settings.labAddr || '';
-    document.getElementById('usPhoneText').textContent = state.settings.labPhone ? 'Mob.: ' + state.settings.labPhone : '';
-    const usLogo = document.getElementById('usLogoBox');
-    if (preset === 'custom' && state.settings.logoData) {
-      usLogo.innerHTML = `<img src="${state.settings.logoData}" style="width:48px;height:48px;object-fit:contain;" alt="Logo" />`;
-    } else {
-      usLogo.innerHTML = getLogoSvgMarkup(preset, 40);
-    }
-    document.getElementById('usRightBox').innerHTML = state.settings.nablNo
-      ? `NABL ACCREDITED<br>${state.settings.nablNo}`
-      : `VERIFIED E-REPORT<br><span style="color:var(--primary);">SPL DIGITAL</span>`;
-  } else if (styleMode === 'royal_exec') {
-    reBox.style.display = 'block';
-    swBox.style.display = 'none';
-    banner.style.display = 'none';
-    document.getElementById('reLabTitle').textContent = labName;
-    document.getElementById('reLabAddr').textContent = fullAddr;
-    const reLogo = document.getElementById('reLogoBox');
-    if (preset === 'custom' && state.settings.logoData) {
-      reLogo.innerHTML = `<img src="${state.settings.logoData}" style="width:42px;height:42px;object-fit:contain;" alt="Logo" />`;
-    } else {
-      reLogo.innerHTML = getLogoSvgMarkup(preset, 34);
-    }
-    document.getElementById('reRightBox').textContent = state.settings.nablNo ? 'NABL: ' + state.settings.nablNo : 'DIAGNOSTIC REPORT';
-  } else if (styleMode === 'sw_dshape') {
-    swBox.style.display = 'block';
-    banner.style.display = 'none';
-    document.getElementById('swLabPill').textContent = labName;
-    document.getElementById('swBannerTitle').innerHTML = labName.replace(/\s+/g, '<br />');
-    document.getElementById('swAddressBar').textContent = fullAddr;
-    const swLogo = document.getElementById('swLogoVisual');
-    if (preset === 'custom' && state.settings.logoData) {
-      swLogo.innerHTML = `<img src="${state.settings.logoData}" style="max-height:46px;max-width:110px;object-fit:contain;" alt="Logo" />`;
-    } else {
-      swLogo.innerHTML = getLogoSvgMarkup(preset, 38);
-    }
-    const swRight = document.getElementById('swRightCol');
-    if (state.settings.nablNo) {
-      swRight.style.visibility = 'visible';
-      document.getElementById('swNablCode').textContent = state.settings.nablNo;
-    } else {
-      swRight.style.visibility = 'hidden';
-    }
+  const logoImg = document.getElementById('repLogoImg');
+  const presetLogoBox = document.getElementById('repPresetLogoBox');
+  if (preset === 'custom' && state.settings.logoData) {
+    logoImg.src = state.settings.logoData;
+    logoImg.style.display = 'block';
+    presetLogoBox.style.display = 'none';
+  } else if (preset === 'microscope' || preset === 'dna') {
+    logoImg.style.display = 'none';
+    presetLogoBox.style.display = 'flex';
+    presetLogoBox.innerHTML = getLogoSvgMarkup(preset, 34);
   } else {
-    swBox.style.display = 'none';
-    banner.style.display = styleMode === 'blank' ? 'none' : 'flex';
-    banner.className = 'rep-banner ' + styleMode;
-    document.getElementById('repLabTitle').textContent = labName;
-    document.getElementById('repLabTag').textContent = state.settings.labTag || '';
-    document.getElementById('repLabAddr').textContent = fullAddr;
+    logoImg.style.display = 'none';
+    presetLogoBox.style.display = 'flex';
+    presetLogoBox.innerHTML = getLogoSvgMarkup('sp_text', 36);
+  }
 
-    const logoImg = document.getElementById('repLogoImg');
-    const presetLogoBox = document.getElementById('repPresetLogoBox');
-    if (preset === 'custom' && state.settings.logoData) {
-      logoImg.src = state.settings.logoData;
-      logoImg.style.display = 'block';
-      presetLogoBox.style.display = 'none';
-    } else if (preset === 'microscope' || preset === 'dna') {
-      logoImg.style.display = 'none';
-      presetLogoBox.style.display = 'flex';
-      presetLogoBox.innerHTML = getLogoSvgMarkup(preset, 38);
-    } else {
-      logoImg.style.display = 'none';
-      presetLogoBox.style.display = 'none';
-    }
-
-    const nablBox = document.getElementById('repNablBox');
-    if (state.settings.nablNo) {
-      nablBox.style.display = 'block';
-      nablBox.style.background = 'rgba(255,255,255,.15)';
-      nablBox.style.padding = '6px 10px';
-      nablBox.style.borderRadius = '7px';
-      nablBox.innerHTML = `NABL ACCREDITED<br>${state.settings.nablNo}`;
-    } else {
-      nablBox.innerHTML = '';
-      nablBox.style.display = 'none';
-    }
+  const nablBox = document.getElementById('repNablBox');
+  if (state.settings.nablNo) {
+    nablBox.style.display = 'block';
+    nablBox.style.background = 'rgba(255,255,255,.16)';
+    nablBox.style.padding = '6px 10px';
+    nablBox.style.borderRadius = '7px';
+    nablBox.innerHTML = `NABL ACCREDITED<br>${state.settings.nablNo}`;
+  } else {
+    nablBox.innerHTML = '';
+    nablBox.style.display = 'none';
   }
 
   document.getElementById('rpName').textContent = p.name;
@@ -2524,7 +2524,7 @@ function renderReportPreview(pid) {
       const valStyle = fl === 'H' ? 'color:#dc2626;font-weight:800;' : (fl === 'L' ? 'color:#d97706;font-weight:800;' : 'font-weight:700;');
       const badge = fl === 'H' ? ' <span class="badge bg-high">HIGH</span>' : (fl === 'L' ? ' <span class="badge bg-low">LOW</span>' : '');
       const refDisp = getRefForGender(it, p.gender);
-      const codePrefix = it.code ? `<span style="color:var(--primary);font-weight:800;">[${it.code}]</span> ` : '';
+      const codePrefix = it.code ? `<span style="color:${pCol};font-weight:800;">[${it.code}]</span> ` : '';
       html += `<tr><td>${codePrefix}<strong>${it.name}</strong></td><td style="${valStyle}">${it.value || 'Pending'}${badge}</td><td>${it.unit || ''}</td><td>${refDisp}</td></tr>`;
     });
     html += `</tbody></table>`;
@@ -2610,6 +2610,9 @@ function addTestMaster() {
 }
 
 function renderMasterTables() {
+  const cntEl = document.getElementById('masterTestCount');
+  if (cntEl) cntEl.textContent = state.tests.length;
+
   document.getElementById('masterTableBody').innerHTML = state.tests.map(t => `
     <tr>
       <td><span class="code-tag">${t.code || t.id.toUpperCase()}</span></td>
@@ -2647,19 +2650,32 @@ function saveProfile() {
 function deleteProfile(id) { if (!isPccRole()) { state.profiles = state.profiles.filter(p => p.id !== id); saveState(); } }
 
 async function pushRecordToCloud(rec) {
-  if (!state.settings.cloudUrl) return;
+  if (!state.settings.cloudUrl) return false;
   try {
     await fetch(state.settings.cloudUrl, {
       method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ key: state.settings.cloudKey || 'SPL_SYNC_2026', record: rec })
     });
-  } catch (e) {}
+    return true;
+  } catch (e) {
+    console.error('Cloud push failed:', e);
+    return false;
+  }
 }
 
-async function syncCloudNow() {
-  if (!state.settings.cloudUrl) return alert('Set Google Apps Script Web App URL in Collection Centres & Cloud Sync first.');
+async function syncCloudNow(silent) {
+  if (!state.settings.cloudUrl) {
+    if (!silent) alert('Set Google Apps Script Web App URL in Collection Centres & Cloud Sync first.');
+    return;
+  }
   try {
-    const res = await fetch(state.settings.cloudUrl + '?key=' + encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026'));
+    // Push any local unsynced/recent records first so collection centre entries always go up
+    for (const rec of state.patients) {
+      await pushRecordToCloud(rec);
+    }
+    const res = await fetch(state.settings.cloudUrl + '?key=' + encodeURIComponent(state.settings.cloudKey || 'SPL_SYNC_2026') + '&_ts=' + Date.now());
     const data = await res.json();
     if (data && data.ok && Array.isArray(data.records)) {
       const map = new Map(state.patients.map(p => [p.id || p.labId, p]));
@@ -2672,9 +2688,11 @@ async function syncCloudNow() {
       });
       state.patients = Array.from(map.values());
       saveState();
-      alert('Cloud Synced! Total records: ' + state.patients.length);
+      if (!silent) alert('Cloud Synced! Total records: ' + state.patients.length);
     }
-  } catch (e) { alert('Sync error: ' + e.message); }
+  } catch (e) {
+    if (!silent) alert('Sync error: ' + e.message);
+  }
 }
 
 function exportBackup() {
@@ -2694,7 +2712,7 @@ function importBackup(ev) {
   reader.onload = () => {
     try {
       const parsed = JSON.parse(reader.result);
-      if (parsed.patients) { state = Object.assign(state, parsed); saveState(); alert('Backup Restored!'); }
+      if (parsed.patients) { state = Object.assign(state, parsed); mergeDefaultCatalogIntoState(); saveState(); alert('Backup Restored!'); }
     } catch (e) { alert('Invalid JSON file.'); }
   };
   reader.readAsText(file);
@@ -2727,7 +2745,12 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bkDate').value = new Date().toISOString().slice(0, 10);
   refreshAllUI();
   handleUrlCentreLogin();
-  if (state.settings.cloudUrl) syncCloudNow();
+  if (state.settings.cloudUrl) {
+    syncCloudNow(true);
+    setInterval(() => {
+      if (state.settings.cloudUrl && !document.hidden) syncCloudNow(true);
+    }, 30000);
+  }
 });
 </script>
 </body>
