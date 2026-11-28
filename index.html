@@ -144,19 +144,22 @@
     .kpi-box small { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; }
     .kpi-box div { font-size: 21px; font-weight: 800; color: var(--primary); margin-top: 4px; }
 
-    /* A4 Report Preview */
+    /* A4 Report Preview (Multi-Page Serial Layout matching Uploaded Lab PDF) */
     .a4-wrapper { background: #cbd5e1; padding: 18px; border-radius: 10px; overflow-x: auto; }
+    .a4-pages-stack { display: flex; flex-direction: column; gap: 22px; align-items: center; }
     .a4-sheet {
-      width: 794px; min-height: 1060px; margin: 0 auto; background: #ffffff !important; color: #0f172a !important;
+      width: 794px; min-height: 1122px; margin: 0 auto; background: #ffffff !important; color: #0f172a !important;
       box-shadow: 0 8px 28px rgba(0,0,0,.18); display: flex; flex-direction: column;
       justify-content: space-between; position: relative; overflow: hidden;
+      page-break-after: always; break-after: page;
     }
+    .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
     .watermark-layer {
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
       pointer-events: none; z-index: 0; transform: rotate(-28deg);
       font-size: 46px; font-weight: 900; color: rgba(15,76,129,.06); letter-spacing: 3px; text-align: center;
     }
-    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 1060px; background: transparent; }
+    .sheet-inner { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 1122px; background: transparent; }
 
     /* Software-Style Letterhead Banner */
     .rep-banner {
@@ -243,9 +246,23 @@
     }
 
     @media print {
+      @page { size: A4 portrait; margin: 0; }
+      body { background: #ffffff !important; margin: 0 !important; }
       body * { visibility: hidden; }
       #printableReport, #printableReport * { visibility: visible; }
-      #printableReport { position: fixed; left: 0; top: 0; width: 100%; box-shadow: none; margin: 0; }
+      #printableReport {
+        position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0;
+        display: block !important; background: #ffffff !important;
+      }
+      #printableReport .a4-sheet {
+        width: 100% !important; min-height: 296mm !important; height: auto !important;
+        box-shadow: none !important; margin: 0 !important; border: none !important;
+        page-break-after: always !important; break-after: page !important;
+      }
+      #printableReport .a4-sheet:last-child {
+        page-break-after: auto !important; break-after: auto !important;
+      }
+      #printableReport .sheet-inner { min-height: 296mm !important; }
     }
   </style>
 </head>
@@ -379,7 +396,7 @@
               </select>
             </div>
             <div>
-              <label>Booking / Sample Remarks (Custom Text Allowed)</label>
+              <label>Clinical History / Sample Remarks (Internal Only — Report par nahi dikhega)</label>
               <input type="text" id="bkRemarks" placeholder="Kuch bhi remark likhein ya upar se option chunein..." />
             </div>
           </div>
@@ -453,7 +470,16 @@
     <div class="card">
       <h2>
         <span>Pending Samples &amp; Report Queue (Main Lab + Collection Centres)</span>
-        <button class="btn btn-primary btn-sm" onclick="syncCloudNow(false)">Refresh / Sync Cloud</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <select id="pqSampleFilter" style="width:190px;padding:5px 8px;font-size:12px;" onchange="renderPendingQueue()">
+            <option value="ALL">All Pending Queue</option>
+            <option value="COLLECTED">Sample Collected</option>
+            <option value="NOT_COLLECTED">Sample Not Collected</option>
+            <option value="REPEAT_ISSUE">Repeat / Kharab Sample</option>
+          </select>
+          <input type="text" id="pqSearchInput" placeholder="Search Lab ID / Name / Barcode..." style="width:210px;padding:5px 8px;font-size:12px;" oninput="renderPendingQueue()" />
+          <button class="btn btn-primary btn-sm" onclick="syncCloudNow(false)">Refresh / Sync Cloud</button>
+        </div>
       </h2>
       <table>
         <thead>
@@ -531,9 +557,11 @@
         <div class="kpi-box"><small>Pending Due (₹)</small><div id="kpiDue" style="color:#dc2626;">₹0</div></div>
         <div class="kpi-box"><small>Centre Commission Share</small><div id="kpiCentreComm" style="color:#0b6b5c;">₹0</div></div>
       </div>
+      <div id="centreBreakdownBox" style="margin:10px 0 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;font-size:12.5px;"></div>
 
       <div style="margin-bottom:10px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="syncCloudNow(false)">Sync Cloud</button>
+        <button class="btn btn-dark btn-sm" onclick="printWorkloadSummary()">Print Daily Summary</button>
         <button class="btn btn-success btn-sm" id="btnExportCsv" onclick="exportWorkloadCSV()">Export CSV / Excel</button>
       </div>
 
@@ -580,6 +608,7 @@
           <button class="btn btn-white btn-sm" onclick="openBillReceipt()">Bill / Receipt</button>
           <button class="btn btn-white btn-sm" onclick="downloadStandaloneEReport()">Download e-Report</button>
           <button class="btn btn-primary btn-sm" onclick="shareWhatsApp()">WhatsApp QR Link</button>
+          <button class="btn btn-white btn-sm" onclick="copyCurrentReportLink()">Copy Report Link</button>
           <button class="btn btn-white btn-sm" onclick="toggleQrLinkBar()">QR Link Option</button>
         </div>
       </h2>
@@ -587,57 +616,7 @@
       <div id="qrLinkPreviewBox" style="display:none;background:#f8fafc;border:1px solid #cbd5e1;padding:8px 12px;border-radius:7px;margin-bottom:12px;font-size:12px;word-break:break-all;"></div>
 
       <div class="a4-wrapper">
-        <div id="printableReport" class="a4-sheet">
-          <div id="repWatermarkLayer" class="watermark-layer">SMART PATHOLOGY LAB</div>
-          <div class="sheet-inner">
-            <div>
-              <!-- SOFTWARE-STYLE HEADER BANNER (With Header / Without Header) -->
-              <div id="repBannerBox" class="rep-banner">
-                <div style="display:flex;align-items:center;gap:14px;">
-                  <img id="repLogoImg" class="rep-logo" style="display:none;" alt="Logo" />
-                  <div id="repPresetLogoBox" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;background:#ffffff;border-radius:10px;flex-shrink:0;"></div>
-                  <div>
-                    <h2 id="repLabTitle" style="font-size:21px;font-weight:800;letter-spacing:.4px;color:#ffffff !important;">SMART PATHOLOGY LAB</h2>
-                    <div id="repLabTag" style="font-size:12px;opacity:.94;color:#ffffff !important;">Accurate • Caring • Instant Diagnostic Services</div>
-                    <div id="repLabAddr" style="font-size:11.5px;opacity:.92;margin-top:2px;color:#ffffff !important;">391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.) • Mob.: 9548593164</div>
-                  </div>
-                </div>
-                <div id="repNablBox" style="text-align:right;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);padding:6px 10px;border-radius:7px;color:#ffffff !important;"></div>
-              </div>
-
-              <div class="rep-patient-grid">
-                <div>
-                  <div><strong>Patient Name:</strong> <span id="rpName">-</span></div>
-                  <div><strong>Age / Gender:</strong> <span id="rpAgeSex">-</span></div>
-                  <div><strong>Mobile:</strong> <span id="rpMobile">-</span></div>
-                </div>
-                <div>
-                  <div><strong>Lab ID:</strong> <span id="rpLabId">-</span></div>
-                  <div><strong>Report Date:</strong> <span id="rpDate">-</span></div>
-                  <div><strong>Referred By:</strong> <span id="rpRef">-</span></div>
-                </div>
-                <div style="text-align:center;">
-                  <canvas id="repQrCanvas" width="120" height="120" style="width:110px;height:110px;border:1px solid #cbd5e1;background:#ffffff;padding:4px;"></canvas>
-                </div>
-              </div>
-
-              <div class="rep-body" id="repTestTables"></div>
-            </div>
-
-            <div class="rep-footer">
-              <div>
-                <div style="font-weight:700;color:#0f172a;">*** End of Diagnostic Report ***</div>
-                <div style="font-size:10.5px;color:#64748b;margin-top:2px;">Thank you for choosing SMART PATHOLOGY LAB.</div>
-              </div>
-              <div class="sig-row" id="repSignaturesRow">
-                <div class="sig-box">
-                  <div style="height:36px;"></div>
-                  <div style="border-top:1px solid #334155;padding-top:3px;font-weight:700;" id="rpDocName">Consultant Pathologist</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div id="printableReport" class="a4-pages-stack"></div>
       </div>
     </div>
   </div>
@@ -2464,8 +2443,20 @@ function printSampleBarcodeSlip() {
 async function saveBooking() {
   const name = document.getElementById('bkName').value.trim();
   const age = document.getElementById('bkAge').value.trim();
+  const mobVal = document.getElementById('bkMobile').value.trim();
+  const bkDtVal = document.getElementById('bkDate').value || new Date().toISOString().slice(0, 10);
   if (!name || !age || selectedTestIds.length === 0) {
     return alert('Please enter Patient Name, Age, and select at least 1 test.');
+  }
+  const dupMatch = state.patients.find(p =>
+    p.date === bkDtVal && (
+      (mobVal && mobVal.length >= 7 && (p.mobile || '').trim() === mobVal) ||
+      ((p.name || '').trim().toLowerCase() === name.toLowerCase())
+    )
+  );
+  if (dupMatch) {
+    const okDup = confirm(`Alert: Aaj (${bkDtVal}) ${dupMatch.name} (${dupMatch.labId}) ki booking pehle se darj hai. Kya aap dobara entry save karna chahte hain?`);
+    if (!okDup) return;
   }
   const centreVal = (isPccRole()
     ? (state.settings.centreCode || 'MAIN')
@@ -2539,7 +2530,21 @@ async function saveBooking() {
 
 function renderPendingQueue() {
   const scoped = getScopedPatients();
-  const pending = scoped.filter(p => p.status !== 'Verified');
+  const sFilter = document.getElementById('pqSampleFilter')?.value || 'ALL';
+  const qText = (document.getElementById('pqSearchInput')?.value || '').trim().toLowerCase();
+  const pending = scoped.filter(p => {
+    if (p.status === 'Verified') return false;
+    const coll = (p.sampleCollected || 'Collected');
+    const hasIssue = Boolean(p.sampleIssue && p.sampleIssue !== 'OK') || /repeat|kharab|hemoly|clot|qns|insufficient/i.test(p.remarks || '');
+    if (sFilter === 'COLLECTED' && coll !== 'Collected') return false;
+    if (sFilter === 'NOT_COLLECTED' && coll === 'Collected') return false;
+    if (sFilter === 'REPEAT_ISSUE' && !hasIssue) return false;
+    if (qText) {
+      const hay = `${p.labId || ''} ${p.name || ''} ${p.mobile || ''} ${p.barcodeNo || ''} ${p.centreCode || ''}`.toLowerCase();
+      if (!hay.includes(qText)) return false;
+    }
+    return true;
+  });
   document.getElementById('pendingCount').textContent = pending.length;
   document.getElementById('pendingTableBody').innerHTML = pending.map((p, idx) => {
     const issueBadge = (p.sampleIssue && p.sampleIssue !== 'OK')
@@ -2559,6 +2564,7 @@ function renderPendingQueue() {
           <br><small style="color:${(p.sampleCollected || 'Collected') === 'Collected' ? '#15803d' : '#b45309'};font-weight:700;">${p.sampleCollected || 'Collected'}</small>
         </td>
         <td style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-white btn-sm" onclick="toggleSampleCollectedStatus('${p.id}')" title="Sample Collected / Pending badlein">${(p.sampleCollected || 'Collected') === 'Collected' ? 'Sample ✓' : 'Collect?'}</button>
           ${!isPccRole() ? `<button class="btn btn-primary btn-sm" onclick="jumpToResult('${p.id}')">Enter Result</button>` : ''}
           <button class="btn btn-warn btn-sm" onclick="openEditBookingModal('${p.id}')">Edit</button>
           <button class="btn btn-white btn-sm" onclick="openBillReceiptModal('${p.id}')">Bill Slip</button>
@@ -2662,6 +2668,65 @@ function markDuePaid(pid) {
   pushRecordToCloud(p);
 }
 
+function focusNextResultInput(ev, curIdx) {
+  if (ev.key === 'Enter') {
+    ev.preventDefault();
+    const nextEl = document.getElementById('resVal_' + (curIdx + 1));
+    if (nextEl) {
+      nextEl.focus();
+      nextEl.select();
+    }
+  }
+}
+
+function toggleSampleCollectedStatus(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  if (!p) return;
+  p.sampleCollected = (p.sampleCollected || 'Collected') === 'Collected' ? 'Pending Collection' : 'Collected';
+  p.updatedAt = new Date().toISOString();
+  saveState();
+  if (state.settings.cloudUrl) pushRecordToCloud(p);
+}
+
+function sendWhatsAppDueReminder(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  if (!p || Number(p.due || 0) <= 0) return;
+  const msg = `Namaste ${p.name}, ${state.settings.labName || 'SMART PATHOLOGY LAB'} (Lab ID: ${p.labId}) par aapka balance due ₹${p.due} hai. Kripya payment clear karein.`;
+  const mob = (p.mobile || '').replace(/\D/g, '');
+  const wa = mob.length === 10 ? `https://wa.me/91${mob}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(wa, '_blank');
+}
+
+function printWorkloadSummary() {
+  const kpiP = document.getElementById('kpiPatients')?.textContent || '0';
+  const kpiB = document.getElementById('kpiBilled')?.textContent || '₹0';
+  const kpiC = document.getElementById('kpiCollected')?.textContent || '₹0';
+  const kpiD = document.getElementById('kpiDue')?.textContent || '₹0';
+  const kpiCm = document.getElementById('kpiCentreComm')?.textContent || '₹0';
+  const breakdown = document.getElementById('centreBreakdownBox')?.innerHTML || '';
+  const win = window.open('', '_blank', 'width=720,height=640');
+  if (!win) return;
+  win.document.write(`
+    <html><head><title>Lab Summary</title>
+    <style>body{font-family:sans-serif;padding:20px;color:#0f172a;}table{width:100%;border-collapse:collapse;margin-top:8px;}th,td{padding:7px;border:1px solid #cbd5e1;text-align:left;font-size:12px;}th{background:#f1f5f9;}.grid{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0;}.box{border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;min-width:120px;}</style>
+    </head><body>
+      <h2 style="margin:0;">${state.settings.labName || 'SMART PATHOLOGY LAB'} — Workload &amp; Billing Summary</h2>
+      <div style="font-size:12px;color:#64748b;margin-top:4px;">Printed on: ${new Date().toLocaleString('en-IN')}</div>
+      <div class="grid">
+        <div class="box"><small>Patients</small><div><strong>${kpiP}</strong></div></div>
+        <div class="box"><small>Total Billed</small><div><strong>${kpiB}</strong></div></div>
+        <div class="box"><small>Collected</small><div><strong>${kpiC}</strong></div></div>
+        <div class="box"><small>Pending Due</small><div><strong>${kpiD}</strong></div></div>
+        <div class="box"><small>Centre Share</small><div><strong>${kpiCm}</strong></div></div>
+      </div>
+      ${breakdown}
+      <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);};<\/script>
+    </body></html>
+  `);
+  win.document.close();
+}
+
+
 function loadResultEditor(pid) {
   if (isPccRole()) return;
   const area = document.getElementById('resultEditorArea');
@@ -2682,7 +2747,7 @@ function loadResultEditor(pid) {
     const rows = groups[dept].map(({ it, idx }) => `
       <tr>
         <td><span class="code-tag">${it.code || (it.testId || '').toUpperCase()}</span> <strong>${it.name}</strong></td>
-        <td><input type="text" id="resVal_${idx}" value="${it.value || ''}" oninput="autoFlagInput(${idx}, '${p.id}')" /></td>
+        <td><input type="text" id="resVal_${idx}" class="res-entry-box" value="${it.value || ''}" oninput="autoFlagInput(${idx}, '${p.id}')" onkeydown="focusNextResultInput(event, ${idx})" /></td>
         <td>${it.unit || '-'}</td>
         <td>${getRefForGender(it, p.gender)}</td>
         <td id="resFlagCell_${idx}">${it.flag ? `<span class="badge ${it.flag === 'H' ? 'bg-high' : 'bg-low'}">${it.flag === 'H' ? 'HIGH' : 'LOW'}</span>` : 'Normal'}</td>
@@ -2723,7 +2788,7 @@ function loadResultEditor(pid) {
     </div>
     ${sectionsHtml}
     <div style="margin-top:12px;">
-      <label>Remarks (Sample Repeat / Kharab Sample / Custom Note — Kuch bhi likhein)</label>
+      <label>Internal Clinical History / Sample Remarks (Sirf Lab &amp; Centre ke liye — Patient Report par print nahi hoga)</label>
       <textarea id="resRemarks" rows="2" placeholder="Yahan kuch bhi remark likhein (sample repeat, kharab sample, ya koi bhi note)...">${p.remarks || ''}</textarea>
       <div class="preset-bar">${remarkChips}</div>
     </div>
@@ -2888,6 +2953,45 @@ function renderWorkload() {
   const commEl = document.getElementById('kpiCentreComm');
   if (commEl) commEl.textContent = '₹' + commTotal;
 
+  const breakdownBox = document.getElementById('centreBreakdownBox');
+  if (breakdownBox) {
+    const statsByCentre = new Map();
+    const nameByCode = new Map([['MAIN', 'Main Lab (Direct)']]);
+    state.centres.forEach(c => nameByCode.set((c.code || '').toUpperCase(), c.name || c.code));
+    filtered.forEach(p => {
+      const ccK = (p.centreCode || 'MAIN').toUpperCase();
+      const cur = statsByCentre.get(ccK) || { code: ccK, cases: 0, billed: 0, collected: 0, due: 0, comm: 0 };
+      const netA = Number(p.net || 0);
+      const pct = ccK === 'MAIN' ? 0 : (commMap.has(ccK) ? commMap.get(ccK) : 20);
+      cur.cases += 1;
+      cur.billed += netA;
+      cur.collected += Number(p.paid || 0);
+      cur.due += Number(p.due || 0);
+      cur.comm += Math.round((netA * pct) / 100);
+      statsByCentre.set(ccK, cur);
+    });
+    if (!statsByCentre.size) {
+      breakdownBox.innerHTML = '<span style="color:#64748b;">No centre summary for current filter.</span>';
+    } else {
+      const rowsSummary = Array.from(statsByCentre.values()).map(st =>
+        `<tr>
+          <td><strong>${st.code}</strong> — ${nameByCode.get(st.code) || st.code}</td>
+          <td>${st.cases}</td>
+          <td>₹${st.billed}</td>
+          <td>₹${st.collected}</td>
+          <td style="color:${st.due > 0 ? '#dc2626' : '#15803d'};font-weight:700;">₹${st.due}</td>
+          <td style="color:#0b6b5c;font-weight:700;">₹${st.comm}</td>
+        </tr>`
+      ).join('');
+      breakdownBox.innerHTML = `
+        <div style="font-weight:800;color:var(--primary);margin-bottom:6px;">Centre-Wise Billing &amp; Commission Summary</div>
+        <table>
+          <thead><tr><th>Centre</th><th>Cases</th><th>Billed</th><th>Collected</th><th>Due</th><th>Centre Share</th></tr></thead>
+          <tbody>${rowsSummary}</tbody>
+        </table>`;
+    }
+  }
+
   document.getElementById('workloadTableBody').innerHTML = filtered.map((p, idx) => `
     <tr>
       <td><strong>${idx + 1}</strong></td>
@@ -2906,6 +3010,7 @@ function renderWorkload() {
         <button class="btn btn-white btn-sm" onclick="openBillReceiptModal('${p.id}')">Bill Slip</button>
         <button class="btn btn-white btn-sm" onclick="reprintBarcodeById('${p.id}')">Barcode</button>
         <button class="btn btn-danger btn-sm" onclick="deleteBookingRecord('${p.id}')">Delete</button>
+        ${Number(p.due || 0) > 0 ? `<button class="btn btn-white btn-sm" onclick="sendWhatsAppDueReminder('${p.id}')">Due Reminder</button>` : ''}
         ${!isPccRole() && Number(p.due || 0) > 0 ? `<button class="btn btn-success btn-sm" onclick="markDuePaid('${p.id}')">Pay Due</button>` : ''}
       </td>
     </tr>
@@ -3101,118 +3206,186 @@ function renderReportPreview(pid) {
   const scoped = getScopedPatients();
   const p = scoped.find(x => x.id === pid) || scoped[scoped.length - 1] || state.patients[state.patients.length - 1];
   const linkBox = document.getElementById('qrLinkPreviewBox');
-  if (!p) { linkBox.textContent = 'No patient record available.'; return; }
+  const container = document.getElementById('printableReport');
+  if (!p) {
+    linkBox.textContent = 'No patient record available.';
+    if (container) container.innerHTML = '<div class="a4-sheet" style="padding:30px;text-align:center;">No patient record available.</div>';
+    return;
+  }
   activeReportPatientId = p.id;
   document.getElementById('prevPatientSelect').value = p.id;
 
-  const wm = document.getElementById('repWatermarkLayer');
-  wm.textContent = state.settings.labName || 'SMART PATHOLOGY LAB';
-  wm.style.display = state.settings.watermark !== false ? 'flex' : 'none';
-
   const styleMode = (state.settings.headerStyle === 'blank' ? 'blank' : 'banner');
-  const banner = document.getElementById('repBannerBox');
   const labName = state.settings.labName || 'SMART PATHOLOGY LAB';
   const fullAddr = (state.settings.labAddr || '') + (state.settings.labPhone ? ' • Mob.: ' + state.settings.labPhone : '');
   const preset = state.settings.logoPreset || (state.settings.logoData ? 'custom' : 'sp_text');
   const pCol = state.settings.primaryColor || '#151e73';
   const sCol = state.settings.secondaryColor || '#0b6b5c';
+  const showWm = state.settings.watermark !== false;
+  const onePanelPerPage = state.settings.deptPageBreak !== false;
 
-  banner.style.display = styleMode === 'blank' ? 'none' : 'flex';
-  banner.className = 'rep-banner ' + styleMode;
-  banner.style.background = `linear-gradient(135deg, ${pCol}, ${sCol})`;
-  banner.style.color = '#ffffff';
-  document.getElementById('repLabTitle').textContent = labName;
-  document.getElementById('repLabTag').textContent = state.settings.labTag || '';
-  document.getElementById('repLabAddr').textContent = fullAddr;
-
-  const logoImg = document.getElementById('repLogoImg');
-  const presetLogoBox = document.getElementById('repPresetLogoBox');
+  let logoHtml = '';
   if (preset === 'custom' && state.settings.logoData) {
-    logoImg.src = state.settings.logoData;
-    logoImg.style.display = 'block';
-    presetLogoBox.style.display = 'none';
+    logoHtml = `<img src="${state.settings.logoData}" class="rep-logo" style="display:block;" alt="Logo" />`;
   } else if (preset === 'microscope' || preset === 'dna') {
-    logoImg.style.display = 'none';
-    presetLogoBox.style.display = 'flex';
-    presetLogoBox.innerHTML = getLogoSvgMarkup(preset, 34);
+    logoHtml = `<div style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;background:#ffffff;border-radius:10px;flex-shrink:0;">${getLogoSvgMarkup(preset, 34)}</div>`;
   } else {
-    logoImg.style.display = 'none';
-    presetLogoBox.style.display = 'flex';
-    presetLogoBox.innerHTML = getLogoSvgMarkup('sp_text', 36);
+    logoHtml = `<div style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;background:#ffffff;border-radius:10px;flex-shrink:0;">${getLogoSvgMarkup('sp_text', 36)}</div>`;
   }
 
-  const nablBox = document.getElementById('repNablBox');
-  if (state.settings.nablNo) {
-    nablBox.style.display = 'block';
-    nablBox.style.background = 'rgba(255,255,255,.16)';
-    nablBox.style.padding = '6px 10px';
-    nablBox.style.borderRadius = '7px';
-    nablBox.innerHTML = `NABL ACCREDITED<br>${state.settings.nablNo}`;
-  } else {
-    nablBox.innerHTML = '';
-    nablBox.style.display = 'none';
-  }
+  const nablHtml = state.settings.nablNo
+    ? `<div style="text-align:right;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);padding:6px 10px;border-radius:7px;color:#ffffff !important;">NABL ACCREDITED<br>${state.settings.nablNo}</div>`
+    : '';
 
-  document.getElementById('rpName').textContent = p.name;
-  document.getElementById('rpAgeSex').textContent = p.age + ' / ' + p.gender;
-  document.getElementById('rpMobile').textContent = p.mobile || '-';
-  document.getElementById('rpLabId').textContent = p.labId;
-  document.getElementById('rpDate').textContent = p.date + (p.time ? ' • ' + p.time : '');
-  document.getElementById('rpRef').textContent = p.refBy;
-
-  const groups = {};
-  p.items.forEach(it => {
-    const d = it.dept || 'GENERAL';
-    if (!groups[d]) groups[d] = [];
-    groups[d].push(it);
-  });
-
-  let html = '';
-  const deptKeys = Object.keys(groups);
-  deptKeys.forEach((dept, dIdx) => {
-    const brkClass = (state.settings.deptPageBreak !== false && dIdx > 0) ? ' rep-dept-break' : '';
-    html += `<div class="rep-dept${brkClass}">${dept}</div>
-      <table>
-        <thead><tr><th style="width:45%">Investigation</th><th style="width:20%">Result</th><th style="width:13%">Unit</th><th style="width:22%">Reference Range</th></tr></thead>
-        <tbody>`;
-    groups[dept].forEach(it => {
-      const fl = (it.flag || '').toUpperCase();
-      const isCrit = fl === 'CH' || fl === 'CL';
-      const isHigh = fl === 'H' || fl === 'CH';
-      const valStyle = isCrit ? 'color:#7f1d1d;font-weight:900;' : (isHigh ? 'color:#dc2626;font-weight:800;' : (fl === 'L' ? 'color:#d97706;font-weight:800;' : 'font-weight:700;'));
-      const badge = fl === 'CH' ? ' <span class="badge bg-high" style="background:#7f1d1d;color:#ffffff;">CRITICAL HIGH</span>'
-        : (fl === 'CL' ? ' <span class="badge bg-high" style="background:#991b1b;color:#ffffff;">CRITICAL LOW</span>'
-        : (fl === 'H' ? ' <span class="badge bg-high">HIGH</span>'
-        : (fl === 'L' ? ' <span class="badge bg-low">LOW</span>' : '')));
-      const refDisp = getRefForGender(it, p.gender);
-      const codePrefix = it.code ? `<span style="color:${pCol};font-weight:800;">[${it.code}]</span> ` : '';
-      html += `<tr><td>${codePrefix}<strong>${it.name}</strong></td><td style="${valStyle}">${it.value || 'Pending'}${badge}</td><td>${it.unit || ''}</td><td>${refDisp}</td></tr>`;
-    });
-    html += `</tbody></table>`;
-
-    const dComment = getDeptComment(p, dept);
-    if (dComment) {
-      html += `<div class="rep-dept-comment-box"><strong>${dept} Comment:</strong> ${dComment}</div>`;
-    }
-  });
-  html += `<div class="rep-summary-box"><strong>Summary:</strong> ${buildAbnormalSummary(p.items)}</div>`;
-  if (p.remarks) {
-    html += `<div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:6px;font-size:12px;"><strong>Remarks:</strong> ${p.remarks}</div>`;
-  }
-  document.getElementById('repTestTables').innerHTML = html;
+  const bannerHtml = styleMode === 'blank' ? '' : `
+    <div class="rep-banner banner" style="background:linear-gradient(135deg, ${pCol}, ${sCol});color:#ffffff !important;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        ${logoHtml}
+        <div>
+          <h2 style="font-size:21px;font-weight:800;letter-spacing:.4px;color:#ffffff !important;">${labName}</h2>
+          <div style="font-size:12px;opacity:.94;color:#ffffff !important;">${state.settings.labTag || ''}</div>
+          <div style="font-size:11.5px;opacity:.92;margin-top:2px;color:#ffffff !important;">${fullAddr}</div>
+        </div>
+      </div>
+      ${nablHtml}
+    </div>`;
 
   let sigHtml = '';
   if (state.settings.stamp) sigHtml += `<div class="sig-box"><img src="${state.settings.stamp}" alt="Stamp" /><div style="font-size:10px;color:#64748b;">Lab Seal</div></div>`;
   if (state.settings.doc2) sigHtml += `<div class="sig-box">${state.settings.sig2 ? `<img src="${state.settings.sig2}" alt="Sig2" />` : '<div style="height:36px;"></div>'}<div style="border-top:1px solid #334155;padding-top:3px;font-weight:700;">${state.settings.doc2}</div></div>`;
   sigHtml += `<div class="sig-box">${state.settings.sig1 ? `<img src="${state.settings.sig1}" alt="Sig1" />` : '<div style="height:36px;"></div>'}<div style="border-top:1px solid #334155;padding-top:3px;font-weight:700;">${state.settings.doc1 || 'Consultant Pathologist'}</div></div>`;
-  document.getElementById('repSignaturesRow').innerHTML = sigHtml;
+
+  // Group items preserving exact serial selection order
+  const groups = {};
+  const deptKeys = [];
+  (p.items || []).forEach(it => {
+    const d = it.dept || 'GENERAL';
+    if (!groups[d]) {
+      groups[d] = [];
+      deptKeys.push(d);
+    }
+    groups[d].push(it);
+  });
+
+  // Build page chunks: either 1 department/panel per A4 page (serial wise), or all on 1 page
+  const pageChunks = onePanelPerPage && deptKeys.length > 0
+    ? deptKeys.map(d => [d])
+    : [deptKeys];
+
+  const totalPages = pageChunks.length;
+  const collectedStr = `${p.date || '-'}${p.time ? ' • ' + p.time : ''}`;
+  const printedStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  container.innerHTML = pageChunks.map((chunkDepts, pageIdx) => {
+    const pageNum = pageIdx + 1;
+    const isLastPage = pageNum === totalPages;
+
+    let bodyHtml = '';
+    chunkDepts.forEach(dept => {
+      bodyHtml += `
+        <div class="rep-dept" style="margin-top:4px;">${dept}</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:44%">Test Name</th>
+              <th style="width:20%">Test Value</th>
+              <th style="width:14%">Unit</th>
+              <th style="width:22%">Biological Ref-Range</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      (groups[dept] || []).forEach(it => {
+        const fl = (it.flag || '').toUpperCase();
+        const isCrit = fl === 'CH' || fl === 'CL';
+        const isHigh = fl === 'H' || fl === 'CH';
+        const valStyle = isCrit
+          ? 'color:#7f1d1d;font-weight:900;'
+          : (isHigh ? 'color:#dc2626;font-weight:800;' : (fl === 'L' ? 'color:#d97706;font-weight:800;' : 'font-weight:700;'));
+        const badge = fl === 'CH'
+          ? ' <span class="badge bg-high" style="background:#7f1d1d;color:#ffffff;">CRITICAL HIGH</span>'
+          : (fl === 'CL'
+            ? ' <span class="badge bg-high" style="background:#991b1b;color:#ffffff;">CRITICAL LOW</span>'
+            : (fl === 'H'
+              ? ' <span class="badge bg-high">HIGH</span>'
+              : (fl === 'L' ? ' <span class="badge bg-low">LOW</span>' : '')));
+        const refDisp = getRefForGender(it, p.gender);
+        const codePrefix = it.code ? `<span style="color:${pCol};font-weight:800;">[${it.code}]</span> ` : '';
+        bodyHtml += `<tr>
+          <td>${codePrefix}<strong>${it.name}</strong></td>
+          <td style="${valStyle}">${it.value !== undefined && it.value !== '' ? it.value : 'Pending'}${badge}</td>
+          <td>${it.unit || '-'}</td>
+          <td>${refDisp}</td>
+        </tr>`;
+      });
+      bodyHtml += `</tbody></table>`;
+
+      const dComment = getDeptComment(p, dept);
+      if (dComment) {
+        bodyHtml += `<div class="rep-dept-comment-box"><strong>${dept} Comment:</strong> ${dComment}</div>`;
+      }
+    });
+
+    if (isLastPage) {
+      bodyHtml += `<div class="rep-summary-box"><strong>Summary:</strong> ${buildAbnormalSummary(p.items)}</div>`;
+    }
+
+    return `
+      <div class="a4-sheet">
+        <div class="watermark-layer" style="display:${showWm ? 'flex' : 'none'};">${labName}</div>
+        <div class="sheet-inner">
+          <div>
+            ${bannerHtml}
+            <div class="rep-patient-grid">
+              <div>
+                <div><strong>Patient:</strong> ${p.name}</div>
+                <div><strong>Age / Sex:</strong> ${p.age} / ${p.gender}</div>
+                <div><strong>Mobile:</strong> ${p.mobile || '-'}</div>
+                <div><strong>Referred By:</strong> ${p.refBy || 'Self'}</div>
+              </div>
+              <div>
+                <div><strong>Lab Ref. No.:</strong> ${p.labId}</div>
+                <div><strong>Centre:</strong> ${p.centreCode || 'MAIN'}</div>
+                <div><strong>Collected On:</strong> ${collectedStr}</div>
+                <div><strong>Report Status:</strong> <span class="badge ${p.status === 'Verified' ? 'bg-verified' : 'bg-pending'}">${p.status === 'Verified' ? 'VERIFIED FINAL' : (p.status || 'PENDING') + ' DRAFT'}</span></div>
+              </div>
+              <div style="text-align:center;">
+                <canvas class="rep-qr-canvas" width="120" height="120" style="width:104px;height:104px;border:1px solid #cbd5e1;background:#ffffff;padding:4px;"></canvas>
+              </div>
+            </div>
+            <div class="rep-body">${bodyHtml}</div>
+          </div>
+
+          <div class="rep-footer">
+            <div>
+              <div style="font-weight:800;color:${pCol};font-size:12px;">Page ${pageNum} of ${totalPages}</div>
+              <div style="font-weight:700;color:#0f172a;margin-top:2px;">${isLastPage ? '*** End of Report ***' : 'Continued on next page...'}</div>
+              <div style="font-size:10.5px;color:#64748b;margin-top:2px;">${labName} • ${state.settings.labAddr || ''}</div>
+            </div>
+            <div class="sig-row">${sigHtml}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 
   const qrUrl = buildDedicatedReportUrl(p);
   linkBox.innerHTML = `<strong>Patient Report URL:</strong> <a href="${qrUrl}" target="_blank">${qrUrl}</a>`;
-  QR_ENGINE.renderToCanvas(document.getElementById('repQrCanvas'), qrUrl);
+  container.querySelectorAll('.rep-qr-canvas').forEach(cv => {
+    QR_ENGINE.renderToCanvas(cv, qrUrl);
+  });
 }
 
 function downloadReportPdf() { window.print(); }
+
+function copyCurrentReportLink() {
+  const p = getScopedPatients().find(x => x.id === activeReportPatientId) || state.patients[state.patients.length - 1];
+  if (!p) return alert('Koi patient report select nahi hai.');
+  const url = buildDedicatedReportUrl(p);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => alert('Patient Report Link copy ho gaya!'));
+  } else {
+    prompt('Copy Report Link:', url);
+  }
+}
 
 
 function computeFlagForItem(it, num, gender) {
