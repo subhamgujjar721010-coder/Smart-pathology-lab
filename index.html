@@ -247,6 +247,26 @@
 
     @media print {
       @page { size: A4 portrait; margin: 0; }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      #printableReport .rep-banner,
+      #printableReport .banner {
+        background: linear-gradient(135deg, var(--primary, #151e73), var(--secondary, #0b6b5c)) !important;
+        color: #ffffff !important;
+      }
+      #printableReport .rep-dept {
+        background: #eff6ff !important;
+        color: var(--primary, #151e73) !important;
+      }
+      #printableReport .rep-dept-comment-box {
+        background: #f8fafc !important;
+      }
+      #printableReport .rep-summary-box {
+        background: #f0fdf4 !important;
+      }
       html, body {
         background: #ffffff !important;
         margin: 0 !important;
