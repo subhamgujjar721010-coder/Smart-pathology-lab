@@ -247,22 +247,66 @@
 
     @media print {
       @page { size: A4 portrait; margin: 0; }
-      body { background: #ffffff !important; margin: 0 !important; }
-      body * { visibility: hidden; }
-      #printableReport, #printableReport * { visibility: visible; }
+      html, body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      header.app-header, nav.tabs, .cc-lock-overlay, .modal-backdrop,
+      #tabBooking, #tabPending, #tabResult, #tabWorkload, #tabMaster, #tabProfiles,
+      #tabPreview > .card > h2, #qrLinkPreviewBox {
+        display: none !important;
+      }
+      .container, #tabPreview, #tabPreview > .card, .a4-wrapper {
+        display: block !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+      }
       #printableReport {
-        position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0;
-        display: block !important; background: #ffffff !important;
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
       }
       #printableReport .a4-sheet {
-        width: 100% !important; min-height: 296mm !important; height: auto !important;
-        box-shadow: none !important; margin: 0 !important; border: none !important;
-        page-break-after: always !important; break-after: page !important;
+        display: block !important;
+        width: 100% !important;
+        min-height: 295mm !important;
+        height: auto !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        border: none !important;
+        overflow: visible !important;
+        page-break-before: always !important;
+        break-before: page !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      #printableReport .a4-sheet:first-child {
+        page-break-before: auto !important;
+        break-before: auto !important;
       }
       #printableReport .a4-sheet:last-child {
-        page-break-after: auto !important; break-after: auto !important;
+        page-break-after: auto !important;
+        break-after: auto !important;
       }
-      #printableReport .sheet-inner { min-height: 296mm !important; }
+      #printableReport .sheet-inner {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        min-height: 294mm !important;
+      }
     }
   </style>
 </head>
@@ -641,6 +685,7 @@
             <option value="BIOCHEMISTRY">BIOCHEMISTRY</option>
             <option value="THYROID & IMMUNOASSAY">THYROID &amp; IMMUNOASSAY</option>
             <option value="SEROLOGY">SEROLOGY</option>
+            <option value="URINE ROUTINE & MICROSCOPY">URINE ROUTINE &amp; MICROSCOPY</option>
             <option value="CLINICAL PATHOLOGY">CLINICAL PATHOLOGY</option>
           </select>
         </div>
@@ -803,21 +848,61 @@
 <div id="modalSignatures" class="modal-backdrop">
   <div class="modal-card">
     <div class="modal-head">
-      <h3>Doctor Signatures &amp; Lab Stamp</h3>
+      <h3>Doctor Signatures &amp; Lab Stamp (Scanner + Auto White-Background Clean)</h3>
       <button class="btn btn-white btn-sm" onclick="closeModal('modalSignatures')">Close</button>
     </div>
     <div class="form-row">
       <div><label>Doctor 1 Name &amp; Qualification</label><input type="text" id="cfgDoc1" /></div>
-      <div><label>Doctor 1 Signature Image</label><input type="file" accept="image/*" onchange="uploadImageCfg(event, 'sig1')" /></div>
+      <div>
+        <label>Doctor 1 Signature (Scan / Upload)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="openAssetScanner('sig1')">Scan Signature</button>
+          <input type="file" accept="image/*" style="flex:1;min-width:130px;" onchange="uploadCleanImageCfg(event, 'sig1')" />
+          <button type="button" class="btn btn-danger btn-sm" onclick="clearSigAsset('sig1')">Clear</button>
+        </div>
+        <div id="prevBox_sig1" style="margin-top:4px;min-height:38px;border:1px dashed #cbd5e1;border-radius:6px;padding:4px;text-align:center;background:#f8fafc;"></div>
+      </div>
     </div>
     <div class="form-row">
       <div><label>Doctor 2 Name (Optional)</label><input type="text" id="cfgDoc2" /></div>
-      <div><label>Doctor 2 Signature Image</label><input type="file" accept="image/*" onchange="uploadImageCfg(event, 'sig2')" /></div>
+      <div>
+        <label>Doctor 2 Signature (Scan / Upload)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="openAssetScanner('sig2')">Scan Signature</button>
+          <input type="file" accept="image/*" style="flex:1;min-width:130px;" onchange="uploadCleanImageCfg(event, 'sig2')" />
+          <button type="button" class="btn btn-danger btn-sm" onclick="clearSigAsset('sig2')">Clear</button>
+        </div>
+        <div id="prevBox_sig2" style="margin-top:4px;min-height:38px;border:1px dashed #cbd5e1;border-radius:6px;padding:4px;text-align:center;background:#f8fafc;"></div>
+      </div>
     </div>
     <div class="form-row">
-      <div><label>Lab Stamp / Seal Image (Optional)</label><input type="file" accept="image/*" onchange="uploadImageCfg(event, 'stamp')" /></div>
+      <div>
+        <label>Lab Stamp / Seal (Scan / Upload)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <button type="button" class="btn btn-success btn-sm" onclick="openAssetScanner('stamp')">Scan Lab Stamp</button>
+          <input type="file" accept="image/*" style="flex:1;min-width:160px;" onchange="uploadCleanImageCfg(event, 'stamp')" />
+          <button type="button" class="btn btn-danger btn-sm" onclick="clearSigAsset('stamp')">Clear</button>
+        </div>
+        <div id="prevBox_stamp" style="margin-top:4px;min-height:46px;border:1px dashed #cbd5e1;border-radius:6px;padding:4px;text-align:center;background:#f8fafc;"></div>
+      </div>
     </div>
-    <button class="btn btn-primary" onclick="saveBranding()">Save Signatures</button>
+
+    <div id="assetScannerBox" style="display:none;margin:10px 0;padding:10px;border:2px solid var(--primary);border-radius:8px;background:#0f172a;color:#fff;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <strong id="assetScannerTitle">Scanner</strong>
+        <button type="button" class="btn btn-danger btn-sm" onclick="closeAssetScanner()">Close Camera</button>
+      </div>
+      <div style="position:relative;border-radius:6px;overflow:hidden;background:#000;">
+        <video id="assetScanVideo" autoplay playsinline style="width:100%;max-height:230px;object-fit:cover;display:block;"></video>
+        <div style="position:absolute;inset:18% 12%;border:2px dashed #22c55e;pointer-events:none;"></div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <label style="color:#e2e8f0;margin:0;font-size:11px;">Paper Clean Level: <input type="range" id="assetCleanThresh" min="140" max="245" value="200" style="width:120px;vertical-align:middle;" /></label>
+        <button type="button" class="btn btn-success btn-sm" onclick="captureScannedAsset()">Capture &amp; Clean Background</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="saveBranding()">Save Signatures &amp; Stamp</button>
   </div>
 </div>
 
@@ -1309,7 +1394,8 @@ const DEFAULT_DEPT_COMMENTS = {
   'BIOCHEMISTRY': 'Biochemistry parameters evaluated on calibrated analyzer; interpret with fasting status and clinical history.',
   'THYROID & IMMUNOASSAY': 'Endocrine & immunoassay values interpreted alongside clinical presentation and medication history.',
   'SEROLOGY': 'Serological results should be correlated clinically with duration of illness and repeat/confirmatory testing if advised.',
-  'CLINICAL PATHOLOGY': 'Routine microscopic examination performed on provided specimen; correlate clinically.'
+  'CLINICAL PATHOLOGY': 'Routine microscopic examination performed on provided specimen; correlate clinically.',
+  'URINE ROUTINE & MICROSCOPY': 'Urine physical, strip chemical, and microscopic sediment examination performed; correlate clinically.'
 };
 
 const REMARK_OPTIONS = [
@@ -1331,10 +1417,11 @@ const DEPT_COMMENT_OPTIONS = [
 
 // Panels whose parameters auto-populate together when any member test is clicked (while still allowing individual × removal)
 const AUTO_PANEL_GROUPS = {
-  'HAEMATOLOGY (CBC)': ['cbc_hb', 'cbc_rbc', 'cbc_pcv', 'cbc_mcv', 'cbc_mch', 'cbc_mchc', 'cbc_rdw', 'cbc_tlc', 'cbc_neut', 'cbc_lymph', 'cbc_mono', 'cbc_eos', 'cbc_baso', 'cbc_plt'],
+  'HAEMATOLOGY (CBC)': ['cbc_hb', 'cbc_rbc', 'cbc_pcv', 'cbc_mcv', 'cbc_mch', 'cbc_mchc', 'cbc_rdw', 'cbc_tlc', 'cbc_neut', 'cbc_lymph', 'cbc_mono', 'cbc_eos', 'cbc_baso', 'cbc_plt', 'cbc_mpv', 'cbc_plcr', 'cbc_plcc', 'cbc_esr'],
   'LIVER FUNCTION TEST (LFT)': ['lft_bilt', 'lft_bild', 'lft_bili', 'lft_sgot', 'lft_sgpt', 'lft_alp', 'lft_ggt', 'lft_tp', 'lft_alb', 'lft_glob', 'lft_ag'],
   'KIDNEY FUNCTION TEST (KFT)': ['kft_urea', 'kft_bun', 'kft_creat', 'kft_uric', 'kft_na', 'kft_k', 'kft_cl', 'kft_cal', 'kft_phos'],
-  'LIPID PROFILE': ['lip_chol', 'lip_trig', 'lip_hdl', 'lip_ldl', 'lip_vldl', 'lip_nonhdl', 'lip_ratio']
+  'LIPID PROFILE': ['lip_chol', 'lip_trig', 'lip_hdl', 'lip_ldl', 'lip_vldl', 'lip_nonhdl', 'lip_ratio', 'lip_ldl_hdl'],
+  'URINE ROUTINE & MICROSCOPY': ['urn_vol', 'urn_col', 'urn_app', 'urn_ph', 'urn_glu', 'urn_prot', 'urn_bld', 'urn_uro', 'urn_bil', 'urn_ket', 'urn_nit', 'urn_leu', 'urn_sg', 'urn_rbc', 'urn_pus', 'urn_epi', 'urn_cry', 'urn_cast', 'urn_bac']
 };
 
 const DEFAULT_TESTS = [
@@ -1419,8 +1506,35 @@ const DEFAULT_TESTS = [
   { id: 'ser_hcv', code: 'HCV', name: 'Anti-HCV Rapid', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
   { id: 'ser_hiv', code: 'HIV', name: 'HIV 1 & 2 Antibody Screening', dept: 'SEROLOGY', unit: 'Qualitative', ref: 'Non-Reactive', femaleRef: '', min: null, max: null, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
 
-  // 8. CLINICAL PATHOLOGY
-  { id: 'cp_urine', code: 'URINE_R', name: 'Urine Routine & Microscopic', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'Pus cells 0 - 5, RBC 0 - 2', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' },
+  { id: 'cbc_mpv', code: 'MPV', name: 'Mean Platelet Volume (MPV)', dept: 'HAEMATOLOGY (CBC)', unit: 'fL', ref: '6.0 - 11.0', femaleRef: '', min: 6.0, max: 11.0, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_plcr', code: 'PLCR', name: 'Platelet Large Cell Ratio (P-LCR)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '10.0 - 60.0', femaleRef: '', min: 10.0, max: 60.0, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'cbc_plcc', code: 'PLCC', name: 'Platelet Large Cell Count (P-LCC)', dept: 'HAEMATOLOGY (CBC)', unit: '%', ref: '10.0 - 99.0', femaleRef: '', min: 10.0, max: 99.0, rate: 60, tube: 'EDTA (Purple)' },
+  { id: 'lip_ldl_hdl', code: 'LD_HD', name: 'LDL / HDL Cholesterol Ratio', dept: 'LIPID PROFILE', unit: 'Ratio', ref: '0.0 - 3.5', femaleRef: '', min: 0, max: 3.5, rate: 60, tube: 'SST / Plain (Red/Yellow)' },
+  { id: 'bio_iron', code: 'IRON', name: 'Serum Iron', dept: 'BIOCHEMISTRY', unit: 'µg/dL', ref: '39 - 149', femaleRef: '', min: 39, max: 149, rate: 300, tube: 'SST / Plain (Red/Yellow)' },
+
+  // 8. URINE ROUTINE & MICROSCOPY (Complete 19 Parameters)
+  { id: 'urn_vol', code: 'UVOL', name: 'Urine Volume', dept: 'URINE ROUTINE & MICROSCOPY', unit: 'ml', ref: '20 - 50', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_col', code: 'UCOL', name: 'Urine Colour', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Pale / Light Yellow', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_app', code: 'UAPP', name: 'Urine Appearance', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Clear', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_ph', code: 'UPH', name: 'Urine pH (Double Indicator)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: '5.0 - 8.0', femaleRef: '', min: 5.0, max: 8.0, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_glu', code: 'UGLU', name: 'Urine Glucose (GOD-POD)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_prot', code: 'UPROT', name: 'Urine Protein (Protein Error)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_bld', code: 'UBLD', name: 'Urine Blood (Tetramethylbenzidine)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_uro', code: 'UURO', name: 'Urine Urobilinogen (Diazo)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil / Normal', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_bil', code: 'UBIL', name: 'Urine Bilirubin (Diazo)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_ket', code: 'UKET', name: 'Urine Ketone (Rotheras Nitroprusside)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_nit', code: 'UNIT', name: 'Urine Nitrite (Diazonium Compound)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_leu', code: 'ULEU', name: 'Urine Leucocytes (Diazonium Salt)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_sg', code: 'USG', name: 'Urine Specific Gravity (pKa Change)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: '1.003 - 1.029', femaleRef: '', min: 1.003, max: 1.029, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_rbc', code: 'URBC', name: 'Urine Red Blood Cells (Microscopy)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '/H.P.F.', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_pus', code: 'UPUS', name: 'Urine Pus Cells (Microscopy)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '/H.P.F.', ref: '0 - 5', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_epi', code: 'UEPI', name: 'Urine Epithelial Cells (Microscopy)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '/H.P.F.', ref: 'Nil / 0 - 2', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_cry', code: 'UCRY', name: 'Urine Crystals (Microscopy)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_cast', code: 'UCAST', name: 'Urine Casts (Microscopy)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+  { id: 'urn_bac', code: 'UBAC', name: 'Urine Bacteria (Microscopy)', dept: 'URINE ROUTINE & MICROSCOPY', unit: '', ref: 'Nil', femaleRef: '', min: null, max: null, rate: 20, tube: 'Urine / Stool Container' },
+
+  // 9. CLINICAL PATHOLOGY
+  { id: 'cp_urine', code: 'URINE_R', name: 'Urine Routine & Microscopic (Single Line)', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'Pus cells 0 - 5, RBC 0 - 2', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' },
   { id: 'cp_stool', code: 'STOOL_R', name: 'Stool Routine & Microscopic', dept: 'CLINICAL PATHOLOGY', unit: '/hpf', ref: 'No ova / cysts seen', femaleRef: '', min: null, max: null, rate: 120, tube: 'Urine / Stool Container' },
   { id: 'cp_upt', code: 'UPT', name: 'Urine Pregnancy Test (UPT)', dept: 'CLINICAL PATHOLOGY', unit: 'Qualitative', ref: 'Negative', femaleRef: '', min: null, max: null, rate: 100, tube: 'Urine / Stool Container' }
 ];
@@ -1455,6 +1569,12 @@ const DEFAULT_PROFILES = [
     name: 'Thyroid Profile Total (T3, T4, TSH)',
     rate: 500,
     testIds: ['imm_t3', 'imm_t4', 'imm_tsh']
+  },
+  {
+    id: 'prof_urine',
+    name: 'Urine Routine & Microscopy (Complete 19 Tests)',
+    rate: 150,
+    testIds: ['urn_vol', 'urn_col', 'urn_app', 'urn_ph', 'urn_glu', 'urn_prot', 'urn_bld', 'urn_uro', 'urn_bil', 'urn_ket', 'urn_nit', 'urn_leu', 'urn_sg', 'urn_rbc', 'urn_pus', 'urn_epi', 'urn_cry', 'urn_cast', 'urn_bac']
   },
   {
     id: 'prof_fever',
@@ -1501,7 +1621,7 @@ let state = {
     labTag: 'Accurate • Caring • Instant Diagnostic Services',
     labAddr: '391, RAM NAGAR, ROORKEE, HARIDWAR (U.K.)',
     labPhone: '9548593164',
-    nablNo: '',
+    nablNo: 'NABL-M(EL)T-02677',
     headerStyle: 'banner',
     watermark: true,
     deptPageBreak: true,
@@ -1510,7 +1630,7 @@ let state = {
     secondaryColor: '#0b6b5c',
     logoPreset: 'sp_text',
     logoData: '',
-    doc1: 'Dr. R. K. Sharma (MD Pathologist)',
+    doc1: 'Dr. Sanjeev Kumar, MBBS, (MD PATH) | Reg. No.-8799',
     sig1: '',
     doc2: '',
     sig2: '',
@@ -1807,7 +1927,7 @@ function openModal(id) {
   }
   document.getElementById(id).classList.add('open');
 }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { if (id === 'modalSignatures' && typeof closeAssetScanner === 'function') closeAssetScanner(); document.getElementById(id).classList.remove('open'); }
 
 function getLogoSvgMarkup(preset, sizePx) {
   const p = state.settings.primaryColor || '#151e73';
@@ -1983,6 +2103,7 @@ function applyThemeAndHeaders() {
   populateBookingCentres();
   applyRoleRestrictions();
   renderCentreManageTable();
+  refreshSigStampPreviews();
 }
 
 function saveBranding() {
@@ -2057,6 +2178,97 @@ function uploadImageCfg(ev, key) {
     if (key === 'logoData') state.settings.logoPreset = 'custom';
   };
   reader.readAsDataURL(file);
+}
+
+function cleanWhitePaperFromCanvas(canvas, threshold = 200) {
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i] > threshold && d[i + 1] > threshold && d[i + 2] > threshold) {
+      d[i + 3] = 0;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+function uploadCleanImageCfg(ev, key) {
+  if (isPccRole()) return;
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      const thresh = Number(document.getElementById('assetCleanThresh')?.value || 205);
+      state.settings[key] = cleanWhitePaperFromCanvas(c, thresh);
+      refreshSigStampPreviews();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+let activeScanAssetKey = null;
+let activeScanStream = null;
+
+async function openAssetScanner(key) {
+  if (isPccRole()) return;
+  activeScanAssetKey = key;
+  const box = document.getElementById('assetScannerBox');
+  const title = document.getElementById('assetScannerTitle');
+  if (title) title.textContent = key === 'stamp' ? 'Scan Lab Stamp / Seal' : 'Scan Doctor Signature';
+  if (box) box.style.display = 'block';
+  try {
+    activeScanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    document.getElementById('assetScanVideo').srcObject = activeScanStream;
+  } catch (err) {
+    alert('Camera access nahi mila — aap saath wale Upload button se photo choose kar sakte hain.');
+    closeAssetScanner();
+  }
+}
+
+function closeAssetScanner() {
+  if (activeScanStream) {
+    activeScanStream.getTracks().forEach(t => t.stop());
+    activeScanStream = null;
+  }
+  const box = document.getElementById('assetScannerBox');
+  if (box) box.style.display = 'none';
+}
+
+function captureScannedAsset() {
+  const video = document.getElementById('assetScanVideo');
+  if (!video || !activeScanAssetKey) return;
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth || 640;
+  c.height = video.videoHeight || 480;
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  const thresh = Number(document.getElementById('assetCleanThresh')?.value || 200);
+  state.settings[activeScanAssetKey] = cleanWhitePaperFromCanvas(c, thresh);
+  refreshSigStampPreviews();
+  closeAssetScanner();
+}
+
+function clearSigAsset(key) {
+  if (isPccRole()) return;
+  state.settings[key] = '';
+  refreshSigStampPreviews();
+}
+
+function refreshSigStampPreviews() {
+  ['sig1', 'sig2', 'stamp'].forEach(k => {
+    const el = document.getElementById('prevBox_' + k);
+    if (!el) return;
+    el.innerHTML = state.settings[k]
+      ? `<img src="${state.settings[k]}" style="max-height:44px;max-width:160px;object-fit:contain;" alt="${k}" />`
+      : '<small style="color:#64748b;">No image set</small>';
+  });
 }
 
 function saveCloudSettings() {
@@ -2747,7 +2959,7 @@ function loadResultEditor(pid) {
     const rows = groups[dept].map(({ it, idx }) => `
       <tr>
         <td><span class="code-tag">${it.code || (it.testId || '').toUpperCase()}</span> <strong>${it.name}</strong></td>
-        <td><input type="text" id="resVal_${idx}" class="res-entry-box" value="${it.value || ''}" oninput="autoFlagInput(${idx}, '${p.id}')" onkeydown="focusNextResultInput(event, ${idx})" /></td>
+        <td><input type="text" id="resVal_${idx}" class="res-entry-box" value="${it.value || ''}" oninput="this.dataset.auto='0';autoFlagInput(${idx}, '${p.id}')" onkeydown="focusNextResultInput(event, ${idx})" /></td>
         <td>${it.unit || '-'}</td>
         <td>${getRefForGender(it, p.gender)}</td>
         <td id="resFlagCell_${idx}">${it.flag ? `<span class="badge ${it.flag === 'H' ? 'bg-high' : 'bg-low'}">${it.flag === 'H' ? 'HIGH' : 'LOW'}</span>` : 'Normal'}</td>
@@ -2804,45 +3016,106 @@ function autoCalculateDerivedPanels(p) {
   const byCode = {};
   p.items.forEach((it, idx) => {
     const c = (it.code || '').toUpperCase();
-    const val = parseFloat(document.getElementById('resVal_' + idx).value.trim());
+    const el = document.getElementById('resVal_' + idx);
+    const val = el ? parseFloat(el.value.trim()) : NaN;
     byCode[c] = { it, idx, val };
   });
 
+  // CBC Indices: MCV, MCH, MCHC
+  if (byCode.RBC && !isNaN(byCode.RBC.val) && byCode.RBC.val > 0) {
+    if (byCode.PCV && !isNaN(byCode.PCV.val) && byCode.MCV) {
+      const inpMcv = document.getElementById('resVal_' + byCode.MCV.idx);
+      if (inpMcv && (!inpMcv.value.trim() || inpMcv.dataset.auto === '1')) {
+        inpMcv.value = ((byCode.PCV.val / byCode.RBC.val) * 10).toFixed(2);
+        inpMcv.dataset.auto = '1';
+      }
+    }
+    if (byCode.HB && !isNaN(byCode.HB.val) && byCode.MCH) {
+      const inpMch = document.getElementById('resVal_' + byCode.MCH.idx);
+      if (inpMch && (!inpMch.value.trim() || inpMch.dataset.auto === '1')) {
+        inpMch.value = ((byCode.HB.val / byCode.RBC.val) * 10).toFixed(2);
+        inpMch.dataset.auto = '1';
+      }
+    }
+  }
+  if (byCode.HB && !isNaN(byCode.HB.val) && byCode.PCV && !isNaN(byCode.PCV.val) && byCode.PCV.val > 0 && byCode.MCHC) {
+    const inpMchc = document.getElementById('resVal_' + byCode.MCHC.idx);
+    if (inpMchc && (!inpMchc.value.trim() || inpMchc.dataset.auto === '1')) {
+      inpMchc.value = ((byCode.HB.val / byCode.PCV.val) * 100).toFixed(2);
+      inpMchc.dataset.auto = '1';
+    }
+  }
+
+  // LFT: Indirect Bilirubin, Globulin, A:G Ratio
   if (byCode.BILT && !isNaN(byCode.BILT.val) && byCode.BILD && !isNaN(byCode.BILD.val) && byCode.BILI) {
     const inp = document.getElementById('resVal_' + byCode.BILI.idx);
-    if (inp && !inp.value.trim()) inp.value = Math.max(0, byCode.BILT.val - byCode.BILD.val).toFixed(2);
+    if (inp && (!inp.value.trim() || inp.dataset.auto === '1')) {
+      inp.value = Math.max(0, byCode.BILT.val - byCode.BILD.val).toFixed(2);
+      inp.dataset.auto = '1';
+    }
   }
   if (byCode.TPROT && !isNaN(byCode.TPROT.val) && byCode.ALB && !isNaN(byCode.ALB.val) && byCode.GLOB) {
     const globVal = Math.max(0.1, byCode.TPROT.val - byCode.ALB.val);
     const inpG = document.getElementById('resVal_' + byCode.GLOB.idx);
-    if (inpG && !inpG.value.trim()) inpG.value = globVal.toFixed(2);
+    if (inpG && (!inpG.value.trim() || inpG.dataset.auto === '1')) {
+      inpG.value = globVal.toFixed(2);
+      inpG.dataset.auto = '1';
+    }
     if (byCode.AGRAT) {
       const inpAG = document.getElementById('resVal_' + byCode.AGRAT.idx);
-      if (inpAG && !inpAG.value.trim()) inpAG.value = (byCode.ALB.val / globVal).toFixed(2);
+      if (inpAG && (!inpAG.value.trim() || inpAG.dataset.auto === '1')) {
+        inpAG.value = (byCode.ALB.val / globVal).toFixed(2);
+        inpAG.dataset.auto = '1';
+      }
     }
   }
+  // KFT: BUN
   if (byCode.UREA && !isNaN(byCode.UREA.val) && byCode.BUN) {
     const inpB = document.getElementById('resVal_' + byCode.BUN.idx);
-    if (inpB && !inpB.value.trim()) inpB.value = (byCode.UREA.val / 2.14).toFixed(1);
+    if (inpB && (!inpB.value.trim() || inpB.dataset.auto === '1')) {
+      inpB.value = (byCode.UREA.val / 2.14).toFixed(1);
+      inpB.dataset.auto = '1';
+    }
   }
+  // LIPID: VLDL, LDL, Non-HDL, Chol/HDL, LDL/HDL
   if (byCode.CHOL && !isNaN(byCode.CHOL.val) && byCode.HDL && !isNaN(byCode.HDL.val)) {
     if (byCode.NHDL) {
       const inpN = document.getElementById('resVal_' + byCode.NHDL.idx);
-      if (inpN && !inpN.value.trim()) inpN.value = Math.max(0, byCode.CHOL.val - byCode.HDL.val).toFixed(1);
+      if (inpN && (!inpN.value.trim() || inpN.dataset.auto === '1')) {
+        inpN.value = Math.max(0, byCode.CHOL.val - byCode.HDL.val).toFixed(1);
+        inpN.dataset.auto = '1';
+      }
     }
     if (byCode.CH_HD && byCode.HDL.val > 0) {
       const inpR = document.getElementById('resVal_' + byCode.CH_HD.idx);
-      if (inpR && !inpR.value.trim()) inpR.value = (byCode.CHOL.val / byCode.HDL.val).toFixed(2);
+      if (inpR && (!inpR.value.trim() || inpR.dataset.auto === '1')) {
+        inpR.value = (byCode.CHOL.val / byCode.HDL.val).toFixed(2);
+        inpR.dataset.auto = '1';
+      }
     }
     if (byCode.TRIG && !isNaN(byCode.TRIG.val)) {
       const vldlVal = byCode.TRIG.val / 5;
       if (byCode.VLDL) {
         const inpV = document.getElementById('resVal_' + byCode.VLDL.idx);
-        if (inpV && !inpV.value.trim()) inpV.value = vldlVal.toFixed(1);
+        if (inpV && (!inpV.value.trim() || inpV.dataset.auto === '1')) {
+          inpV.value = vldlVal.toFixed(2);
+          inpV.dataset.auto = '1';
+        }
       }
+      const ldlVal = Math.max(0, byCode.CHOL.val - byCode.HDL.val - vldlVal);
       if (byCode.LDL) {
         const inpL = document.getElementById('resVal_' + byCode.LDL.idx);
-        if (inpL && !inpL.value.trim()) inpL.value = Math.max(0, byCode.CHOL.val - byCode.HDL.val - vldlVal).toFixed(1);
+        if (inpL && (!inpL.value.trim() || inpL.dataset.auto === '1')) {
+          inpL.value = ldlVal.toFixed(2);
+          inpL.dataset.auto = '1';
+        }
+      }
+      if (byCode.LD_HD && byCode.HDL.val > 0) {
+        const inpLR = document.getElementById('resVal_' + byCode.LD_HD.idx);
+        if (inpLR && (!inpLR.value.trim() || inpLR.dataset.auto === '1')) {
+          inpLR.value = (ldlVal / byCode.HDL.val).toFixed(2);
+          inpLR.dataset.auto = '1';
+        }
       }
     }
   }
