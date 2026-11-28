@@ -1901,12 +1901,17 @@ function buildDedicatedReportUrl(patient) {
     ln: state.settings.labName || 'SMART PATHOLOGY LAB',
     la: state.settings.labAddr || '',
     lp: state.settings.labPhone || '',
+    nb: state.settings.nablNo || 'NABL-M(EL)T-02677',
+    lh: state.settings.headerStyle || 'banner',
+    pc: state.settings.primaryColor || '#151e73',
+    sc: state.settings.secondaryColor || '#0b6b5c',
     p: patient.name,
     as: (patient.age || '') + '/' + (patient.gender || ''),
     id: patient.labId,
     dt: patient.date,
     rf: patient.refBy || 'Self',
-    dr: state.settings.doc1 || 'Consultant Pathologist',
+    dr: state.settings.doc1 || 'Dr. Sanjeev Kumar, MBBS, (MD PATH) | Reg. No.-8799',
+    dr2: state.settings.doc2 || '',
     dc: deptMap,
     t: (patient.items || []).map(it => {
       const codePrefix = it.code ? `[${it.code}] ` : '';
